@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useSocketIO } from './hooks/useWebSocket';
 import { Product, ProductRecommendationEvent } from './types/product';
-import ProductCard from './components/ProductCard';
+import ProductCarousel from './components/ProductCarousel';
 import ConnectionStatus from './components/ConnectionStatus';
 
 export default function Home() {
@@ -27,35 +27,23 @@ export default function Home() {
       }
     };
 
-    on('product-recommendations', handleProducts);
+    on<ProductRecommendationEvent>('product-recommendations', handleProducts);
 
     return () => {
-      off('product-recommendations', handleProducts);
+      off<ProductRecommendationEvent>('product-recommendations', handleProducts);
     };
   }, [on, off]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 p-12">
+    <div className="min-h-screen bg-gradient-to-br from-[#042F6A] to-[#4EB2F1] p-8 lg:p-12 flex flex-col">
       <ConnectionStatus isConnected={isConnected} error={connectionError} />
-
-      <header className="mb-12 text-center">
-        <h1 className="text-7xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 mb-4">
-          Recommended Products
-        </h1>
-        <p className="text-3xl text-gray-600">
-          Discover our top picks just for you
-        </p>
-      </header>
-
       {products.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 max-w-[1920px] mx-auto">
-          {products.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
+        <div className="flex-1 flex items-center justify-center">
+          <ProductCarousel products={products} intervalMs={5000} />
         </div>
       ) : (
-        <div className="flex flex-col items-center justify-center min-h-[60vh]">
-          <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl p-16 text-center">
+        <div className="flex-1 flex items-center justify-center">
+          <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl p-16 text-center max-w-2xl">
             <div className="mb-8">
               <svg
                 className="w-32 h-32 mx-auto text-gray-400 animate-pulse"
@@ -71,10 +59,10 @@ export default function Home() {
                 />
               </svg>
             </div>
-            <h2 className="text-4xl font-bold text-gray-800 mb-4">
+            <h2 className="text-5xl font-bold text-gray-800 mb-4">
               Waiting for Products
             </h2>
-            <p className="text-2xl text-gray-600">
+            <p className="text-3xl text-gray-600">
               Product recommendations will appear here once received
             </p>
           </div>
