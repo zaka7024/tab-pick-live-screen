@@ -14,9 +14,9 @@ export default function ProductCard({ product, isFullScreen = false }: ProductCa
 
   if (isFullScreen) {
     return (
-      <div className="bg-white/95 backdrop-blur-lg rounded-3xl shadow-2xl overflow-hidden flex flex-col lg:flex-row w-full max-w-[1800px] mx-auto min-h-[600px] animate-fade-in">
+      <div className="bg-white/95 backdrop-blur-lg rounded-3xl shadow-2xl overflow-hidden flex flex-col lg:flex-row w-[1080px] mx-auto min-h-[600px] animate-fade-in">
         {/* Product Image - Left Side */}
-        <div className="relative lg:w-1/2 h-96 lg:h-auto bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
+        <div className="relative w-[1080px] h-96 lg:h-auto bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
           {product.imageUrl ? (
             <img
               src={product.imageUrl}
@@ -54,42 +54,6 @@ export default function ProductCard({ product, isFullScreen = false }: ProductCa
               -{product.discount}%
             </div>
           )}
-        </div>
-
-        {/* Product Details - Right Side */}
-        <div className="lg:w-1/2 p-12 lg:p-16 flex flex-col justify-center">
-          <h2 className="text-6xl lg:text-7xl font-bold text-gray-900 mb-6 leading-tight">
-            {product.name}
-          </h2>
-          
-          {/* {product.description && (
-            <p className="text-3xl lg:text-4xl text-gray-600 mb-10 leading-relaxed">
-              {product.description}
-            </p>
-          )} */}
-
-          {/* Price Section */}
-          {/* <div className="mt-auto">
-            {hasDiscount ? (
-              <div className="space-y-4">
-                <div className="flex items-center gap-6">
-                  <span className="text-4xl text-gray-400 line-through">
-                    {currency}{product.price.toFixed(2)}
-                  </span>
-                  <span className="bg-red-500 text-white px-6 py-2 rounded-full text-2xl font-bold">
-                    Save {currency}{(product.price - discountedPrice).toFixed(2)}
-                  </span>
-                </div>
-                <div className="text-8xl font-bold text-green-600">
-                  {currency}{discountedPrice.toFixed(2)}
-                </div>
-              </div>
-            ) : (
-              <div className="text-8xl font-bold text-gray-900">
-                {currency}{product.price.toFixed(2)}
-              </div>
-            )}
-          </div> */}
         </div>
       </div>
     );
