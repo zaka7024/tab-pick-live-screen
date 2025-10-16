@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { useSocketIO } from './hooks/useWebSocket';
 import { Product, ProductRecommendationEvent } from './types/product';
 import ProductCarousel from './components/ProductCarousel';
-import ConnectionStatus from './components/ConnectionStatus';
 
 export default function Home() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -36,7 +35,6 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#042F6A] to-[#4EB2F1] p-8 lg:p-12 flex flex-col">
-      <ConnectionStatus isConnected={isConnected} error={connectionError} />
       {products.length > 0 ? (
         <div className="flex-1 flex items-center justify-center">
           <ProductCarousel products={products} intervalMs={5000} />
