@@ -24,7 +24,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.accessToken = user.access_token;
+        token.accessToken = user.accessToken;
         token.expires_at = Math.floor(
           Date.now() / 1000 + parseInt(user.expiresIn),
         );
@@ -51,8 +51,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
         return {
           ...token,
-          accessToken: refreshedTokens.access_token,
-          refreshToken: refreshedTokens.refresh_token,
+          accessToken: refreshedTokens.accessToken,
+          refreshToken: refreshedTokens.refreshToken,
           expires_at: Math.floor(
             Date.now() / 1000 + parseInt(refreshedTokens.expiresIn),
           ),
