@@ -9,17 +9,9 @@ import { Plus, Search, Filter, MoreVertical, Edit, Trash2, Tag, ImageIcon } from
 import { ProductDialog } from "@/components/product-dialog"
 import { Badge } from "@/components/ui/badge"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-
-interface Product {
-  id: string
-  name: string
-  category: string
-  price: number
-  stock: number
-  aiTags: string[]
-  status: "active" | "draft" | "archived"
-  image: string
-}
+import { useProducts } from "@/app/hooks/useProducts"
+import { Product } from "@/app/types/product"
+import { Spinner } from "@/components/ui/spinner"
 
 export default function ProductsPage() {
   const router = useRouter()
@@ -27,48 +19,8 @@ export default function ProductsPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
 
-  const [products, setProducts] = useState<Product[]>([
-    {
-      id: "1",
-      name: "Wireless Headphones Pro",
-      category: "Electronics",
-      price: 299.99,
-      stock: 45,
-      aiTags: ["premium", "audio", "wireless", "trending"],
-      status: "active",
-      image: "/wireless-headphones.png",
-    },
-    {
-      id: "2",
-      name: "Smart Watch Ultra",
-      category: "Wearables",
-      price: 449.99,
-      stock: 23,
-      aiTags: ["fitness", "smart", "health", "popular"],
-      status: "active",
-      image: "/smartwatch-lifestyle.png",
-    },
-    {
-      id: "3",
-      name: "Ergonomic Office Chair",
-      category: "Furniture",
-      price: 599.99,
-      stock: 12,
-      aiTags: ["comfort", "office", "ergonomic", "bestseller"],
-      status: "active",
-      image: "/ergonomic-office-chair.png",
-    },
-    {
-      id: "4",
-      name: "Mechanical Keyboard RGB",
-      category: "Electronics",
-      price: 159.99,
-      stock: 67,
-      aiTags: ["gaming", "rgb", "mechanical", "new"],
-      status: "active",
-      image: "/mechanical-keyboard.png",
-    },
-  ])
+  // Fetch products using SWR hook
+  const { products, isLoading, isError, mutate } = useProducts()
 
   const handleAddProduct = () => {
     setSelectedProduct(null)
@@ -80,24 +32,48 @@ export default function ProductsPage() {
     setIsDialogOpen(true)
   }
 
-  const handleDeleteProduct = (id: string) => {
-    setProducts(products.filter((p) => p.id !== id))
+  const handleDeleteProduct = async (id: string) => {
+    // TODO: Implement delete API call
+    // After deletion, revalidate the products list
+    await mutate()
   }
 
-  const handleSaveProduct = (product: Product) => {
-    if (selectedProduct) {
-      setProducts(products.map((p) => (p.id === product.id ? product : p)))
-    } else {
-      setProducts([...products, { ...product, id: Date.now().toString() }])
-    }
+  const handleSaveProduct = async (product: Product) => {
+    // TODO: Implement create/update API call
+    // After saving, revalidate the products list
+    await mutate()
     setIsDialogOpen(false)
   }
 
-  const filteredProducts = products.filter(
+  const filteredProducts = products?.filter(
     (product) =>
       product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       product.category.toLowerCase().includes(searchQuery.toLowerCase()),
-  )
+  ) || []
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <Spinner className="h-8 w-8 mx-auto mb-4" />
+          <p className="text-muted-foreground">Loading products...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Error state
+  if (isError) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <p className="text-destructive mb-4">Failed to load products</p>
+          <Button onClick={() => mutate()}>Try Again</Button>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
@@ -132,85 +108,85 @@ export default function ProductsPage() {
       </Card>
 
       <div className="grid gap-4">
-        {filteredProducts.map((product) => (
-          <Card key={product.id} className="p-6 bg-card border-border hover:border-primary/50 transition-colors">
-            <div className="flex items-start gap-4">
-              <img
-                src={product.image || "/placeholder.svg"}
-                alt={product.name}
-                className="w-20 h-20 rounded-lg object-cover bg-secondary"
-              />
-
-              <div className="flex-1 min-w-0">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-foreground">{product.name}</h3>
-                    <p className="text-sm text-muted-foreground mt-1">{product.category}</p>
-                  </div>
-
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
-                        <MoreVertical className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="bg-card border-border">
-                      <DropdownMenuItem onClick={() => handleEditProduct(product)} className="text-foreground">
-                        <Edit className="h-4 w-4 mr-2" />
-                        Edit
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => router.push(`/dashboard/products/${product.id}/banner`)}
-                        className="text-foreground"
-                      >
-                        <ImageIcon className="h-4 w-4 mr-2" />
-                        Edit Banner
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleDeleteProduct(product.id)} className="text-destructive">
-                        <Trash2 className="h-4 w-4 mr-2" />
-                        Delete
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-
-                <div className="flex items-center gap-6 mt-4">
-                  <div>
-                    <p className="text-xs text-muted-foreground">Price</p>
-                    <p className="text-sm font-semibold text-foreground">${product.price}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Stock</p>
-                    <p className="text-sm font-semibold text-foreground">{product.stock} units</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Status</p>
-                    <Badge
-                      variant={product.status === "active" ? "default" : "secondary"}
-                      className={product.status === "active" ? "bg-chart-3 text-foreground" : ""}
-                    >
-                      {product.status}
-                    </Badge>
-                  </div>
-                </div>
-
-                <div className="mt-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Tag className="h-3 w-3 text-muted-foreground" />
-                    <p className="text-xs text-muted-foreground">AI Tags</p>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {product.aiTags.map((tag, i) => (
-                      <Badge key={i} variant="outline" className="border-primary/30 text-primary bg-primary/10">
-                        {tag}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              </div>
+        {filteredProducts.length === 0 ? (
+          <Card className="p-12 bg-card border-border">
+            <div className="text-center">
+              <p className="text-muted-foreground">No products found</p>
             </div>
           </Card>
-        ))}
+        ) : (
+          filteredProducts.map((product) => (
+            <Card key={product.id} className="p-6 bg-card border-border hover:border-primary/50 transition-colors">
+              <div className="flex items-start gap-4">
+                <div className="w-20 h-20 rounded-lg bg-secondary flex items-center justify-center">
+                  <ImageIcon className="h-8 w-8 text-muted-foreground" />
+                </div>
+
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex-1">
+                      <h3 className="text-lg font-semibold text-foreground">{product.name}</h3>
+                      <p className="text-sm text-muted-foreground mt-1">{product.category}</p>
+                      {product.description && (
+                        <p className="text-sm text-muted-foreground mt-2 line-clamp-2">{product.description}</p>
+                      )}
+                    </div>
+
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="bg-card border-border">
+                        <DropdownMenuItem onClick={() => handleEditProduct(product)} className="text-foreground">
+                          <Edit className="h-4 w-4 mr-2" />
+                          Edit
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => router.push(`/dashboard/products/${product.id}/banner`)}
+                          className="text-foreground"
+                        >
+                          <ImageIcon className="h-4 w-4 mr-2" />
+                          Edit Banner
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleDeleteProduct(product.id)} className="text-destructive">
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+
+                  <div className="flex items-center gap-6 mt-4">
+                    <div>
+                      <p className="text-xs text-muted-foreground">Price</p>
+                      <p className="text-sm font-semibold text-foreground">
+                        {product.currency} {product.price.toFixed(2)}
+                      </p>
+                    </div>
+                  </div>
+
+                  {product.tags && product.tags.length > 0 && (
+                    <div className="mt-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Tag className="h-3 w-3 text-muted-foreground" />
+                        <p className="text-xs text-muted-foreground">Tags</p>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {product.tags.map((tag, i) => (
+                          <Badge key={i} variant="outline" className="border-primary/30 text-primary bg-primary/10">
+                            {tag}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </Card>
+          ))
+        )}
       </div>
 
       <ProductDialog

@@ -8,17 +8,8 @@ import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { X, Sparkles } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-
-interface Product {
-  id: string
-  name: string
-  category: string
-  price: number
-  stock: number
-  aiTags: string[]
-  status: "active" | "draft" | "archived"
-  image: string
-}
+import { Product } from "@/app/types/product"
+import { Textarea } from "@/components/ui/textarea"
 
 interface ProductDialogProps {
   open: boolean
@@ -30,12 +21,12 @@ interface ProductDialogProps {
 export function ProductDialog({ open, onOpenChange, product, onSave }: ProductDialogProps) {
   const [formData, setFormData] = useState<Partial<Product>>({
     name: "",
+    description: "",
     category: "",
     price: 0,
-    stock: 0,
-    aiTags: [],
-    status: "draft",
-    image: "/diverse-products-still-life.png",
+    currency: "USD",
+    tags: [],
+    organizationId: "",
   })
   const [tagInput, setTagInput] = useState("")
   const [isGeneratingTags, setIsGeneratingTags] = useState(false)
@@ -46,21 +37,21 @@ export function ProductDialog({ open, onOpenChange, product, onSave }: ProductDi
     } else {
       setFormData({
         name: "",
+        description: "",
         category: "",
         price: 0,
-        stock: 0,
-        aiTags: [],
-        status: "draft",
-        image: "/diverse-products-still-life.png",
+        currency: "USD",
+        tags: [],
+        organizationId: "",
       })
     }
   }, [product, open])
 
   const handleAddTag = () => {
-    if (tagInput.trim() && !formData.aiTags?.includes(tagInput.trim())) {
+    if (tagInput.trim() && !formData.tags?.includes(tagInput.trim())) {
       setFormData({
         ...formData,
-        aiTags: [...(formData.aiTags || []), tagInput.trim()],
+        tags: [...(formData.tags || []), tagInput.trim()],
       })
       setTagInput("")
     }
@@ -69,7 +60,7 @@ export function ProductDialog({ open, onOpenChange, product, onSave }: ProductDi
   const handleRemoveTag = (tag: string) => {
     setFormData({
       ...formData,
-      aiTags: formData.aiTags?.filter((t) => t !== tag) || [],
+      tags: formData.tags?.filter((t) => t !== tag) || [],
     })
   }
 
@@ -78,10 +69,10 @@ export function ProductDialog({ open, onOpenChange, product, onSave }: ProductDi
     // Simulate AI tag generation
     setTimeout(() => {
       const suggestedTags = ["trending", "popular", "recommended", "bestseller", "new-arrival"]
-      const newTags = suggestedTags.filter((tag) => !formData.aiTags?.includes(tag)).slice(0, 3)
+      const newTags = suggestedTags.filter((tag) => !formData.tags?.includes(tag)).slice(0, 3)
       setFormData({
         ...formData,
-        aiTags: [...(formData.aiTags || []), ...newTags],
+        tags: [...(formData.tags || []), ...newTags],
       })
       setIsGeneratingTags(false)
     }, 1000)
@@ -99,46 +90,49 @@ export function ProductDialog({ open, onOpenChange, product, onSave }: ProductDi
         </DialogHeader>
 
         <div className="space-y-4 py-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="name" className="text-foreground">
-                Product Name
-              </Label>
-              <Input
-                id="name"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="Enter product name"
-                className="bg-secondary border-border text-foreground"
-              />
-            </div>
+          <div className="space-y-2">
+            <Label htmlFor="name" className="text-foreground">
+              Product Name
+            </Label>
+            <Input
+              id="name"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              placeholder="Enter product name"
+              className="bg-secondary border-border text-foreground"
+            />
+          </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="category" className="text-foreground">
-                Category
-              </Label>
-              <Select
-                value={formData.category}
-                onValueChange={(value) => setFormData({ ...formData, category: value })}
-              >
-                <SelectTrigger className="bg-secondary border-border text-foreground">
-                  <SelectValue placeholder="Select category" />
-                </SelectTrigger>
-                <SelectContent className="bg-card border-border">
-                  <SelectItem value="Electronics">Electronics</SelectItem>
-                  <SelectItem value="Wearables">Wearables</SelectItem>
-                  <SelectItem value="Furniture">Furniture</SelectItem>
-                  <SelectItem value="Accessories">Accessories</SelectItem>
-                  <SelectItem value="Home">Home</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+          <div className="space-y-2">
+            <Label htmlFor="description" className="text-foreground">
+              Description
+            </Label>
+            <Textarea
+              id="description"
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              placeholder="Enter product description"
+              className="bg-secondary border-border text-foreground min-h-[100px]"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="category" className="text-foreground">
+              Category
+            </Label>
+            <Input
+              id="category"
+              value={formData.category}
+              onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+              placeholder="Enter category"
+              className="bg-secondary border-border text-foreground"
+            />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="price" className="text-foreground">
-                Price ($)
+                Price
               </Label>
               <Input
                 id="price"
@@ -151,42 +145,22 @@ export function ProductDialog({ open, onOpenChange, product, onSave }: ProductDi
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="stock" className="text-foreground">
-                Stock
+              <Label htmlFor="currency" className="text-foreground">
+                Currency
               </Label>
               <Input
-                id="stock"
-                type="number"
-                value={formData.stock}
-                onChange={(e) => setFormData({ ...formData, stock: Number.parseInt(e.target.value) })}
-                placeholder="0"
+                id="currency"
+                value={formData.currency}
+                onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
+                placeholder="USD"
                 className="bg-secondary border-border text-foreground"
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="status" className="text-foreground">
-              Status
-            </Label>
-            <Select
-              value={formData.status}
-              onValueChange={(value: "active" | "draft" | "archived") => setFormData({ ...formData, status: value })}
-            >
-              <SelectTrigger className="bg-secondary border-border text-foreground">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent className="bg-card border-border">
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="draft">Draft</SelectItem>
-                <SelectItem value="archived">Archived</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label className="text-foreground">AI Tags</Label>
+              <Label className="text-foreground">Tags</Label>
               <Button
                 type="button"
                 variant="outline"
@@ -219,7 +193,7 @@ export function ProductDialog({ open, onOpenChange, product, onSave }: ProductDi
             </div>
 
             <div className="flex flex-wrap gap-2 mt-2">
-              {formData.aiTags?.map((tag, i) => (
+              {formData.tags?.map((tag, i) => (
                 <Badge key={i} variant="outline" className="border-primary/30 text-primary bg-primary/10 pr-1">
                   {tag}
                   <button onClick={() => handleRemoveTag(tag)} className="ml-2 hover:text-destructive">
