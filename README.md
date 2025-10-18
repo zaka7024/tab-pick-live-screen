@@ -1,3 +1,7 @@
+# ScreenScese
+
+ScreenScese is a real-time product display and management platform built with Next.js. It provides a live screen interface for displaying product recommendations and a dashboard for managing products.
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started

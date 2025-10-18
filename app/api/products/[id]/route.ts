@@ -1,21 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAccessToken } from '@/lib/utils';
 
-export async function GET(request: NextRequest) {
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
     const accessToken = await getAccessToken();
+    const body = await request.json();
+    const { id } = await params;
 
-    const response = await fetch(`${process.env.BACKEND_URL}/products`, {
-      method: 'GET',
+    const response = await fetch(`${process.env.BACKEND_URL}/products/${id}`, {
+      method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `${accessToken}`,
       },
+      body: JSON.stringify(body),
     });
 
     if (!response.ok) {
       return NextResponse.json(
-        { error: 'Failed to fetch products' },
+        { error: 'Failed to update product' },
         { status: response.status }
       );
     }
@@ -31,23 +37,25 @@ export async function GET(request: NextRequest) {
   }
 }
 
-export async function POST(request: NextRequest) {
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
     const accessToken = await getAccessToken();
-    const body = await request.json();
+    const { id } = await params;
 
-    const response = await fetch(`${process.env.BACKEND_URL}/products`, {
-      method: 'POST',
+    const response = await fetch(`${process.env.BACKEND_URL}/products/${id}`, {
+      method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `${accessToken}`,
       },
-      body: JSON.stringify(body),
     });
 
     if (!response.ok) {
       return NextResponse.json(
-        { error: 'Failed to create product' },
+        { error: 'Failed to delete product' },
         { status: response.status }
       );
     }

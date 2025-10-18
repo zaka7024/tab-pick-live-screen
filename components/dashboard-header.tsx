@@ -13,18 +13,21 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import Link from "next/link"
+import { signOut } from "next-auth/react"
 
 export function DashboardHeader() {
-  const handleSignOut = () => {
-    console.log("Signing out...")
-    // Add your sign out logic here (e.g., clear session, redirect to login)
+  const handleSignOut = async () => {
+    await signOut({
+      callbackUrl: "/login",
+      redirect: true,
+    })
   }
 
   return (
     <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b border-border bg-background px-6">
       <div className="flex items-center gap-2">
         <SidebarTrigger />
-        <h2 className="text-lg font-semibold text-foreground">AI Store Dashboard</h2>
+        <h2 className="text-lg font-semibold text-foreground">ScreenScese Dashboard</h2>
       </div>
 
       <div className="flex items-center gap-2">

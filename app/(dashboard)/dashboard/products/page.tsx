@@ -18,9 +18,10 @@ export default function ProductsPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
+  const [isSaving, setIsSaving] = useState(false)
 
   // Fetch products using SWR hook
-  const { products, isLoading, isError, mutate } = useProducts()
+  const { products, isLoading, isError, mutate, createProduct, updateProduct, deleteProduct } = useProducts()
 
   const handleAddProduct = () => {
     setSelectedProduct(null)
@@ -33,16 +34,36 @@ export default function ProductsPage() {
   }
 
   const handleDeleteProduct = async (id: string) => {
-    // TODO: Implement delete API call
-    // After deletion, revalidate the products list
-    await mutate()
+    try {
+      if (confirm('Are you sure you want to delete this product?')) {
+        await deleteProduct(id)
+      }
+    } catch (error) {
+      console.error('Failed to delete product:', error)
+      alert('Failed to delete product. Please try again.')
+    }
   }
 
   const handleSaveProduct = async (product: Product) => {
-    // TODO: Implement create/update API call
-    // After saving, revalidate the products list
-    await mutate()
-    setIsDialogOpen(false)
+    try {
+      setIsSaving(true)
+      
+      if (selectedProduct) {
+        // Update existing product
+        await updateProduct(product.id, product)
+      } else {
+        // Create new product (omit id as backend will generate it)
+        const { id, ...productData } = product
+        await createProduct(productData)
+      }
+      
+      setIsDialogOpen(false)
+    } catch (error) {
+      console.error('Failed to save product:', error)
+      alert('Failed to save product. Please try again.')
+    } finally {
+      setIsSaving(false)
+    }
   }
 
   const filteredProducts = products?.filter(
@@ -100,10 +121,6 @@ export default function ProductsPage() {
               className="pl-10 bg-secondary border-border text-foreground"
             />
           </div>
-          <Button variant="outline" className="border-border text-foreground bg-transparent">
-            <Filter className="h-4 w-4 mr-2" />
-            Filter
-          </Button>
         </div>
       </Card>
 
@@ -194,6 +211,7 @@ export default function ProductsPage() {
         onOpenChange={setIsDialogOpen}
         product={selectedProduct}
         onSave={handleSaveProduct}
+        isSaving={isSaving}
       />
     </div>
   )

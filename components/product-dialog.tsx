@@ -16,9 +16,10 @@ interface ProductDialogProps {
   onOpenChange: (open: boolean) => void
   product: Product | null
   onSave: (product: Product) => void
+  isSaving?: boolean
 }
 
-export function ProductDialog({ open, onOpenChange, product, onSave }: ProductDialogProps) {
+export function ProductDialog({ open, onOpenChange, product, onSave, isSaving = false }: ProductDialogProps) {
   const [formData, setFormData] = useState<Partial<Product>>({
     name: "",
     description: "",
@@ -206,11 +207,20 @@ export function ProductDialog({ open, onOpenChange, product, onSave }: ProductDi
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} className="border-border text-foreground">
+          <Button 
+            variant="outline" 
+            onClick={() => onOpenChange(false)} 
+            className="border-border text-foreground"
+            disabled={isSaving}
+          >
             Cancel
           </Button>
-          <Button onClick={handleSave} className="bg-primary text-primary-foreground hover:bg-primary/90">
-            {product ? "Save Changes" : "Add Product"}
+          <Button 
+            onClick={handleSave} 
+            className="bg-primary text-primary-foreground hover:bg-primary/90"
+            disabled={isSaving}
+          >
+            {isSaving ? "Saving..." : product ? "Save Changes" : "Add Product"}
           </Button>
         </DialogFooter>
       </DialogContent>

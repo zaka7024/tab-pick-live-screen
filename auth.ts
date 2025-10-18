@@ -87,12 +87,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           }),
         });
 
-        if (response.status == 400) {
-          throw new InvalidCredentialsError('Invalid credentials');
-        }
-
         const data = await response.json();
         const payload = data.payload;
+
+        if (payload.status == 400) {
+          throw new InvalidCredentialsError('Invalid credentials');
+        }
 
         return payload;
       },

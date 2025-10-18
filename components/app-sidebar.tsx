@@ -39,7 +39,7 @@ export function AppSidebar() {
             <Package className="size-4" />
           </div>
           <div className="flex flex-col gap-0.5 leading-none">
-            <span className="font-semibold">AI Store</span>
+            <span className="font-semibold">ScreenScese</span>
             <span className="text-xs text-muted-foreground">Dashboard</span>
           </div>
         </div>

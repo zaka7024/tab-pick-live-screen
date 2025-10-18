@@ -33,9 +33,9 @@ export default function DisplayPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight text-foreground">Display Customization</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">Settings</h1>
         <p className="text-muted-foreground mt-2">
-          Customize themes, layouts, and visual styles for product recommendations
+          Customize themes, layouts, visual styles for product recommendations, and ai generation settings.
         </p>
       </div>
 
