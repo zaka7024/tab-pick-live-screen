@@ -160,7 +160,7 @@ export default function ProductsPage() {
                         Edit
                       </DropdownMenuItem>
                       <DropdownMenuItem
-                        onClick={() => router.push(`/products/${product.id}/banner`)}
+                        onClick={() => router.push(`/dashboard/products/${product.id}/banner`)}
                         className="text-foreground"
                       >
                         <ImageIcon className="h-4 w-4 mr-2" />

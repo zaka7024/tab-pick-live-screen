@@ -5,6 +5,8 @@ import { useSocketIO } from './hooks/useWebSocket';
 import { Product, ProductRecommendationEvent } from './types/product';
 import ProductCarousel from './components/ProductCarousel';
 import ConnectionStatus from './components/ConnectionStatus';
+import Link from 'next/link';
+import { Settings } from 'lucide-react';
 
 export default function Home() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -36,7 +38,16 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#042F6A] to-[#4EB2F1] p-8 lg:p-12 flex flex-col">
-      <ConnectionStatus isConnected={isConnected} error={connectionError} />
+      <div className="flex items-center justify-between mb-4">
+        <ConnectionStatus isConnected={isConnected} error={connectionError} />
+        <Link 
+          href="/dashboard/products"
+          className="flex items-center gap-2 bg-white/95 hover:bg-white text-[#042F6A] font-semibold px-6 py-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-200"
+        >
+          <Settings className="w-5 h-5" />
+          <span>Dashboard</span>
+        </Link>
+      </div>
       {products.length > 0 ? (
         <div className="flex-1 flex items-center justify-center">
           <ProductCarousel products={products} intervalMs={5000} />

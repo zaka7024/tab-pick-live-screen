@@ -1,6 +1,6 @@
 "use client"
 
-import { LogOut } from "lucide-react"
+import { LogOut, Monitor } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { SidebarTrigger } from "@/components/ui/sidebar"
+import Link from "next/link"
 
 export function DashboardHeader() {
   const handleSignOut = () => {
@@ -27,6 +28,12 @@ export function DashboardHeader() {
       </div>
 
       <div className="flex items-center gap-2">
+        <Link href="/">
+          <Button variant="outline" className="flex items-center gap-2 cursor-pointer">
+            <Monitor className="h-4 w-4" />
+            <span>Display Page</span>
+          </Button>
+        </Link>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="relative h-9 w-9 rounded-full">

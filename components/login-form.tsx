@@ -40,7 +40,7 @@ export function LoginForm({
       if (result?.error) {
         setError("Invalid email or password")
       } else if (result?.ok) {
-        router.push("/display")
+        router.push("/dashboard/settings")
         router.refresh()
       }
     } catch (err) {

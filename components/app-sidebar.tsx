@@ -18,12 +18,12 @@ import {
 const navItems = [
   {
     title: "Products",
-    href: "/products",
+    href: "/dashboard/products",
     icon: Package,
   },
   {
     title: "Settings",
-    href: "/display",
+    href: "/dashboard/settings",
     icon: Settings,
   },
 ]
@@ -50,7 +50,7 @@ export function AppSidebar() {
             <SidebarMenu>
               {navItems.map((item) => {
                 const Icon = item.icon
-                const isActive = pathname === item.href
+                const isActive = pathname.startsWith(item.href)
 
                 return (
                   <SidebarMenuItem key={item.href}>
