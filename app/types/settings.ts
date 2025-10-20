@@ -18,6 +18,7 @@ export interface Layout {
 
 export interface Config {
   columns: number;
+  rows: number;
   spacing: number;
   itemsPerPage: number;
   autoPlay: boolean;

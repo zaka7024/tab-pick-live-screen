@@ -5,16 +5,14 @@ import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Palette, Layout, Eye, Monitor, Smartphone, Tablet, Save } from "lucide-react"
+import { Palette, Layout, Eye, Save } from "lucide-react"
 import { Slider } from "@/components/ui/slider"
-import { Switch } from "@/components/ui/switch"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { useSettings } from "@/app/hooks/useSettings"
 import { Spinner } from "@/components/ui/spinner"
 import { toast } from "sonner"
+import { PreviewDialog } from "@/components/preview"
 
-// Define state shape
 interface SettingsState {
   theme: {
     primaryColor: string
@@ -23,15 +21,12 @@ interface SettingsState {
   layout: {
     style: string
     columns: number
+    rows: number
     spacing: number
   }
   card: {
     style: string
     borderRadius: number
-  }
-  ui: {
-    previewDevice: string
-    previewOpen: boolean
   }
   layoutSpecific: {
     carousel: {
@@ -41,38 +36,32 @@ interface SettingsState {
   }
 }
 
-// Define action types
 type SettingsAction =
   | { type: 'SET_THEME_COLOR'; field: 'primaryColor' | 'secondaryColor'; value: string }
   | { type: 'SET_LAYOUT_STYLE'; value: string }
   | { type: 'SET_LAYOUT_COLUMNS'; value: number }
+  | { type: 'SET_LAYOUT_ROWS'; value: number }
   | { type: 'SET_LAYOUT_SPACING'; value: number }
   | { type: 'SET_CARD_STYLE'; value: string }
   | { type: 'SET_CARD_BORDER_RADIUS'; value: number }
-  | { type: 'SET_PREVIEW_DEVICE'; value: string }
-  | { type: 'SET_PREVIEW_OPEN'; value: boolean }
   | { type: 'SET_CAROUSEL_ITEM_WIDTH'; value: number }
   | { type: 'SET_CAROUSEL_GAP'; value: number }
   | { type: 'INITIALIZE_SETTINGS'; payload: SettingsState }
 
-// Initial state
 const initialState: SettingsState = {
   theme: {
     primaryColor: "#4EB2F1",
     secondaryColor: "#6366F1",
   },
   layout: {
-    style: "grid",
-    columns: 3,
+    style: "carousel",
+    columns: 2,
+    rows: 1,
     spacing: 16,
   },
   card: {
     style: "elevated",
     borderRadius: 8,
-  },
-  ui: {
-    previewDevice: "desktop",
-    previewOpen: false,
   },
   layoutSpecific: {
     carousel: {
@@ -82,7 +71,6 @@ const initialState: SettingsState = {
   },
 }
 
-// Reducer function
 function settingsReducer(state: SettingsState, action: SettingsAction): SettingsState {
   switch (action.type) {
     case 'SET_THEME_COLOR':
@@ -109,6 +97,14 @@ function settingsReducer(state: SettingsState, action: SettingsAction): Settings
           columns: action.value,
         },
       }
+    case 'SET_LAYOUT_ROWS':
+      return {
+        ...state,
+        layout: {
+          ...state.layout,
+          rows: action.value,
+        },
+      }
     case 'SET_LAYOUT_SPACING':
       return {
         ...state,
@@ -131,22 +127,6 @@ function settingsReducer(state: SettingsState, action: SettingsAction): Settings
         card: {
           ...state.card,
           borderRadius: action.value,
-        },
-      }
-    case 'SET_PREVIEW_DEVICE':
-      return {
-        ...state,
-        ui: {
-          ...state.ui,
-          previewDevice: action.value,
-        },
-      }
-    case 'SET_PREVIEW_OPEN':
-      return {
-        ...state,
-        ui: {
-          ...state.ui,
-          previewOpen: action.value,
         },
       }
     case 'SET_CAROUSEL_ITEM_WIDTH':
@@ -182,8 +162,8 @@ export default function DisplayPage() {
   const { settings, isLoading, isError, updateSettings, mutate } = useSettings()
   const [state, dispatch] = useReducer(settingsReducer, initialState)
   const [isSaving, setIsSaving] = useState(false)
+  const [previewOpen, setPreviewOpen] = useState(false)
 
-  // Populate state from fetched settings
   useEffect(() => {
     if (settings) {
       dispatch({
@@ -196,15 +176,12 @@ export default function DisplayPage() {
           layout: {
             style: settings.layout.style,
             columns: settings.layout.config.columns,
+            rows: settings.layout.config.rows,
             spacing: settings.layout.config.spacing,
           },
           card: {
             style: settings.card.style,
             borderRadius: settings.card.borderRadius,
-          },
-          ui: {
-            previewDevice: state.ui.previewDevice,
-            previewOpen: state.ui.previewOpen,
           },
           layoutSpecific: state.layoutSpecific,
         },
@@ -225,6 +202,7 @@ export default function DisplayPage() {
           style: state.layout.style,
           config: {
             columns: state.layout.columns,
+            rows: state.layout.rows,
             spacing: state.layout.spacing,
             itemsPerPage: settings?.layout.config.itemsPerPage || 10,
             autoPlay: settings?.layout.config.autoPlay || false,
@@ -246,7 +224,6 @@ export default function DisplayPage() {
     }
   }
 
-  // Loading state
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -258,7 +235,6 @@ export default function DisplayPage() {
     )
   }
 
-  // Error state
   if (isError) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -305,136 +281,13 @@ export default function DisplayPage() {
               <h3 className="text-lg font-semibold text-foreground">Live Preview</h3>
               <p className="text-sm text-muted-foreground">See how your changes look in real-time</p>
             </div>
-            <Dialog open={state.ui.previewOpen} onOpenChange={(value) => dispatch({ type: 'SET_PREVIEW_OPEN', value })}>
-              <DialogTrigger asChild>
-                <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
-                  <Eye className="h-4 w-4 mr-2" />
-                  Open Preview
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-[95vw] w-full h-[90vh] bg-card border-border">
-                <DialogHeader>
-                  <DialogTitle className="text-foreground flex items-center justify-between">
-                    <span>Display Preview</span>
-                    <div className="flex gap-2">
-                      <Button
-                        variant={state.ui.previewDevice === "desktop" ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => dispatch({ type: 'SET_PREVIEW_DEVICE', value: "desktop" })}
-                        className={state.ui.previewDevice === "desktop" ? "bg-primary text-primary-foreground" : "border-border"}
-                      >
-                        <Monitor className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant={state.ui.previewDevice === "tablet" ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => dispatch({ type: 'SET_PREVIEW_DEVICE', value: "tablet" })}
-                        className={state.ui.previewDevice === "tablet" ? "bg-primary text-primary-foreground" : "border-border"}
-                      >
-                        <Tablet className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant={state.ui.previewDevice === "mobile" ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => dispatch({ type: 'SET_PREVIEW_DEVICE', value: "mobile" })}
-                        className={state.ui.previewDevice === "mobile" ? "bg-primary text-primary-foreground" : "border-border"}
-                      >
-                        <Smartphone className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </DialogTitle>
-                </DialogHeader>
-
-                <div className="flex-1 overflow-auto">
-                  <div
-                    className={`mx-auto ${state.ui.previewDevice === "mobile" ? "max-w-sm" : state.ui.previewDevice === "tablet" ? "max-w-2xl" : "max-w-6xl"}`}
-                  >
-                    <div className="rounded-lg border-2 border-border bg-secondary/50 p-6">
-                      {state.layout.style === "grid" && (
-                        <div
-                          className="grid gap-4"
-                          style={{
-                            gridTemplateColumns: `repeat(${state.layout.columns}, minmax(0, 1fr))`,
-                            gap: `${state.layout.spacing}px`,
-                          }}
-                        >
-                          {[1, 2, 3, 4, 5, 6].map((i) => (
-                            <div
-                              key={i}
-                              className={`rounded-lg bg-card border border-border p-4 ${
-                                state.card.style === "elevated" ? "shadow-lg" : ""
-                              }`}
-                              style={{ borderRadius: `${state.card.borderRadius}px` }}
-                            >
-                              <div
-                                className="w-full h-48 rounded mb-3"
-                                style={{
-                                  backgroundColor: state.theme.primaryColor + "33",
-                                  borderRadius: `${state.card.borderRadius}px`,
-                                }}
-                              />
-                              <h4 className="font-semibold text-foreground mb-1">Product {i}</h4>
-                              <p className="text-sm text-muted-foreground mb-3">High-quality product description</p>
-                              <div className="flex items-center justify-between">
-                                <span className="font-bold text-foreground">${299 + i * 50}.99</span>
-                                <Button
-                                  size="sm"
-                                  style={{
-                                    backgroundColor: state.theme.primaryColor,
-                                    borderRadius: `${state.card.borderRadius}px`,
-                                  }}
-                                >
-                                  Add to Cart
-                                </Button>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-
-                      {state.layout.style === "carousel" && (
-                        <div className="flex overflow-x-auto pb-4" style={{ gap: `${state.layoutSpecific.carousel.gap}px` }}>
-                          {[1, 2, 3, 4, 5].map((i) => (
-                            <div
-                              key={i}
-                              className={`rounded-lg bg-card border border-border p-4 flex-shrink-0 ${
-                                state.card.style === "elevated" ? "shadow-lg" : ""
-                              }`}
-                              style={{
-                                borderRadius: `${state.card.borderRadius}px`,
-                                width: `${state.layoutSpecific.carousel.itemWidth}px`,
-                              }}
-                            >
-                              <div
-                                className="w-full h-48 rounded mb-3"
-                                style={{
-                                  backgroundColor: state.theme.primaryColor + "33",
-                                  borderRadius: `${state.card.borderRadius}px`,
-                                }}
-                              />
-                              <h4 className="font-semibold text-foreground mb-1">Product {i}</h4>
-                              <p className="text-sm text-muted-foreground mb-3">Product description</p>
-                              <div className="flex items-center justify-between">
-                                <span className="font-bold text-foreground">${299 + i * 50}.99</span>
-                                <Button
-                                  size="sm"
-                                  style={{
-                                    backgroundColor: state.theme.primaryColor,
-                                    borderRadius: `${state.card.borderRadius}px`,
-                                  }}
-                                >
-                                  Add to Cart
-                                </Button>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </DialogContent>
-            </Dialog>
+            <Button 
+              onClick={() => setPreviewOpen(true)}
+              className="bg-primary text-primary-foreground hover:bg-primary/90"
+            >
+              <Eye className="h-4 w-4 mr-2" />
+              Open Preview
+            </Button>
           </div>
         </Card>
 
@@ -508,18 +361,18 @@ export default function DisplayPage() {
               <Label className="text-foreground font-medium">Layout Style</Label>
               <RadioGroup value={state.layout.style} onValueChange={(value) => dispatch({ type: 'SET_LAYOUT_STYLE', value })} className="grid grid-cols-2 gap-4">
                 <div>
-                  <RadioGroupItem value="grid" id="grid" className="peer sr-only" />
+                  <RadioGroupItem value="grid" id="grid" className="peer sr-only" disabled />
                   <Label
                     htmlFor="grid"
-                    className="flex flex-col items-center justify-center rounded-lg border-2 border-border bg-secondary p-4 hover:bg-secondary/80 peer-data-[state=checked]:border-primary cursor-pointer"
+                    className="flex flex-col items-center justify-center rounded-lg border-2 border-border bg-secondary/50 p-4 opacity-50 cursor-not-allowed"
                   >
                     <div className="grid grid-cols-2 gap-1 mb-2">
-                      <div className="w-8 h-8 rounded bg-primary/20" />
-                      <div className="w-8 h-8 rounded bg-primary/20" />
-                      <div className="w-8 h-8 rounded bg-primary/20" />
-                      <div className="w-8 h-8 rounded bg-primary/20" />
+                      <div className="w-8 h-8 rounded bg-primary/10" />
+                      <div className="w-8 h-8 rounded bg-primary/10" />
+                      <div className="w-8 h-8 rounded bg-primary/10" />
+                      <div className="w-8 h-8 rounded bg-primary/10" />
                     </div>
-                    <span className="text-sm font-medium text-foreground">Grid</span>
+                    <span className="text-sm font-medium text-muted-foreground">Grid (Coming Soon)</span>
                   </Label>
                 </div>
                 <div>
@@ -551,7 +404,20 @@ export default function DisplayPage() {
                     value={[state.layout.columns]} 
                     onValueChange={(value) => dispatch({ type: 'SET_LAYOUT_COLUMNS', value: value[0] })} 
                     min={2} 
-                    max={6} 
+                    max={3} 
+                    step={1} 
+                  />
+                </div>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-foreground">Rows</Label>
+                    <span className="text-sm font-semibold text-primary">{state.layout.rows}</span>
+                  </div>
+                  <Slider 
+                    value={[state.layout.rows]} 
+                    onValueChange={(value) => dispatch({ type: 'SET_LAYOUT_ROWS', value: value[0] })} 
+                    min={1} 
+                    max={2} 
                     step={1} 
                   />
                 </div>
@@ -582,9 +448,9 @@ export default function DisplayPage() {
                   <Slider
                     value={[state.layoutSpecific.carousel.itemWidth]}
                     onValueChange={(value) => dispatch({ type: 'SET_CAROUSEL_ITEM_WIDTH', value: value[0] })}
-                    min={200}
-                    max={400}
-                    step={20}
+                    min={720}
+                    max={1400}
+                    step={100}
                   />
                 </div>
                 <div className="space-y-3">
@@ -670,6 +536,12 @@ export default function DisplayPage() {
           </div>
         </Card>
       </div>
+
+      <PreviewDialog
+        open={previewOpen}
+        onOpenChange={setPreviewOpen}
+        settings={state}
+      />
     </div>
   )
 }
