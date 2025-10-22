@@ -9,6 +9,7 @@ interface UseSocketIOOptions {
   autoConnect?: boolean;
   reconnectionAttempts?: number;
   reconnectionDelay?: number;
+  authToken?: string;
 }
 
 export function useSocketIO({
@@ -19,6 +20,8 @@ export function useSocketIO({
   autoConnect = true,
   reconnectionAttempts = Infinity,
   reconnectionDelay = 1000,
+  authToken
+
 }: UseSocketIOOptions) {
   const [isConnected, setIsConnected] = useState(false);
   const [connectionError, setConnectionError] = useState<string | null>(null);
@@ -31,6 +34,9 @@ export function useSocketIO({
       reconnectionAttempts,
       reconnectionDelay,
       transports: ['websocket', 'polling'],
+      auth: {
+        token: authToken
+      }
     });
 
     socketRef.current = socket;
@@ -64,7 +70,7 @@ export function useSocketIO({
       socket.disconnect();
       socket.removeAllListeners();
     };
-  }, [url, onConnect, onDisconnect, onError, autoConnect, reconnectionAttempts, reconnectionDelay]);
+  }, [url, onConnect, onDisconnect, onError, autoConnect, reconnectionAttempts, reconnectionDelay, authToken]);
 
   const emit = <T = unknown>(event: string, data?: T) => {
     if (socketRef.current?.connected) {

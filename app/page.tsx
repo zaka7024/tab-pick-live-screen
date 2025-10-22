@@ -7,16 +7,20 @@ import ProductCarousel from './components/ProductCarousel';
 import ConnectionStatus from './components/ConnectionStatus';
 import Link from 'next/link';
 import { Settings } from 'lucide-react';
+import { useSession } from 'next-auth/react';
 
 export default function Home() {
   const [products, setProducts] = useState<Product[]>([]);
+
+  const { data: session } = useSession();
   
   // const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:4000';
-  const SOCKET_URL = "https://tab-pick-live-production.up.railway.app";
+  const SOCKET_URL = "https://api-pick-live.tabsense.ai";
 
   const { isConnected, connectionError, on, off } = useSocketIO({
     url: SOCKET_URL,
     reconnectionDelay: 5000,
+    authToken: session?.user.accessToken
   });
 
   useEffect(() => {

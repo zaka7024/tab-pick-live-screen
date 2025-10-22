@@ -156,7 +156,7 @@ export default function ProductBannerPage({ params }: { params: { id: string } }
               <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
                 <li>Be specific about the product appearance and setting</li>
                 <li>Mention lighting, background, and composition preferences</li>
-                <li>Include style keywords like "professional", "lifestyle", "minimalist"</li>
+                <li>Include style keywords like &quot;professional&quot;, &quot;lifestyle&quot;, &quot;minimalist&quot;</li>
                 <li>Specify the product angle or perspective you want</li>
               </ul>
             </div>
