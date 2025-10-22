@@ -31,7 +31,7 @@ export function DashboardHeader() {
       </div>
 
       <div className="flex items-center gap-2">
-        <Link href="/">
+        <Link href="/display">
           <Button variant="outline" className="flex items-center gap-2 cursor-pointer">
             <Monitor className="h-4 w-4" />
             <span>Display Page</span>
