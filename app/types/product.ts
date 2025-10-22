@@ -1,12 +1,12 @@
 export interface Product {
   id: string;
   name: string;
-  description?: string;
+  description: string;
+  category: string;
+  tags: string[];
   price: number;
-  currency?: string;
-  imageUrl?: string;
-  category?: string;
-  discount?: number;
+  currency: string;
+  organizationId: string;
 }
 
 export interface ProductRecommendationEvent {
