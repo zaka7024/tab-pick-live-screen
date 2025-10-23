@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ScreenScese",
-  description: "ScreenScese - Real-time product display and management platform",
+  title: "ScreenSense",
+  description: "ScreenSense - Real-time product display and management platform",
 };
 
 export default function RootLayout({

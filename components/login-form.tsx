@@ -62,9 +62,9 @@ export function LoginForm({
               <div className="flex size-8 items-center justify-center rounded-md">
                 <GalleryVerticalEnd className="size-6" />
               </div>
-              <span className="sr-only">ScreenScese</span>
+              <span className="sr-only">ScreenSense</span>
             </a>
-            <h1 className="text-xl font-bold">Welcome to ScreenScese</h1>
+            <h1 className="text-xl font-bold">Welcome to ScreenSense</h1>
           </div>
           {error && (
             <div className="text-sm text-red-500 text-center p-2 bg-red-50 rounded-md">
