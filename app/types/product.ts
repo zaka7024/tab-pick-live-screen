@@ -7,6 +7,7 @@ export interface Product {
   price: number;
   currency: string;
   organizationId: string;
+  imageUrl: string;
 }
 
 export interface ProductRecommendationEvent {
