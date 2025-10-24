@@ -1,13 +1,19 @@
 import { useState, useEffect } from 'react';
 import { Product } from '../types/product';
+import { ImageOrientation } from '../types/settings';
 import ProductCard from './ProductCard';
 
 interface ProductCarouselProps {
   products: Product[];
   intervalMs?: number;
+  orientation?: ImageOrientation;
 }
 
-export default function ProductCarousel({ products, intervalMs = 5000 }: ProductCarouselProps) {
+export default function ProductCarousel({ 
+  products, 
+  intervalMs = 5000,
+  orientation = ImageOrientation.Landscape 
+}: ProductCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
@@ -31,15 +37,20 @@ export default function ProductCarousel({ products, intervalMs = 5000 }: Product
 
   const currentProduct = products[currentIndex];
 
+  const isPortrait = orientation === ImageOrientation.Portrait;
+
   return (
-    <div className="relative w-full">
+    <div className={`relative ${isPortrait ? 'max-w-3xl mx-auto' : 'w-full'}`}>
       {/* Product Display */}
       <div className="w-full">
-        <ProductCard product={currentProduct} isFullScreen />
+        <ProductCard 
+          product={currentProduct} 
+          isFullScreen 
+          orientation={orientation}
+        />
       </div>
 
-      {/* Progress Indicators */}
-      <div className="flex justify-center gap-3 mt-8">
+      {/* <div className="flex justify-center gap-3 mt-8">
         {products.map((_, index) => (
           <div
             key={index}
@@ -55,14 +66,13 @@ export default function ProductCarousel({ products, intervalMs = 5000 }: Product
             />
           </div>
         ))}
-      </div>
+      </div> */}
 
-      {/* Product Counter */}
-      <div className="text-center mt-6">
+      {/* <div className="text-center mt-6">
         <span className="text-4xl font-semibold text-white/80">
           {currentIndex + 1} / {products.length}
         </span>
-      </div>
+      </div> */}
 
       <style jsx>{`
         @keyframes progress {

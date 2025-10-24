@@ -1,26 +1,42 @@
 import { Product } from '../types/product';
+import { ImageOrientation } from '../types/settings';
 
 interface ProductCardProps {
   product: Product;
   isFullScreen?: boolean;
+  orientation?: ImageOrientation;
 }
 
 export default function ProductCard({
   product,
   isFullScreen = false,
+  orientation = ImageOrientation.Landscape,
 }: ProductCardProps) {
   const currency = product.currency || '$';
+  const isPortrait = orientation === ImageOrientation.Portrait;
 
   if (isFullScreen) {
     return (
-      <div className='bg-white/95 backdrop-blur-lg rounded-3xl shadow-2xl overflow-hidden flex flex-col lg:flex-row w-[1080px] mx-auto min-h-[600px] animate-fade-in'>
-        {/* Product Image - Left Side */}
-        <div className='relative w-[1080px] h-96 lg:h-auto bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden'>
+      
+      <div 
+        className={`bg-white/95 backdrop-blur-lg rounded-3xl shadow-2xl overflow-hidden animate-fade-in ${
+          isPortrait 
+            ? 'flex flex-col w-full max-w-2xl mx-auto min-h-[900px]' 
+            : 'flex flex-col lg:flex-row w-[1080px] mx-auto min-h-[600px]'
+        }`}
+      >
+        <div 
+          className={`relative bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden ${
+            isPortrait 
+              ? 'w-full h-[900px]' 
+              : 'w-[1080px] h-96 lg:h-auto'
+          }`}
+        >
           {product.imageUrl ? (
             <img
               src={product.imageUrl}
               alt={product.name}
-              className='w-full h-full object-cover'
+              className='w-full h-full'
             />
           ) : (
             <div className='w-full h-full flex items-center justify-center'>
@@ -58,7 +74,7 @@ export default function ProductCard({
           <img
             src={product.imageUrl}
             alt={product.name}
-            className='w-full h-full object-cover'
+            className='w-full h-full'
           />
         ) : (
           <div className='w-full h-full flex items-center justify-center'>

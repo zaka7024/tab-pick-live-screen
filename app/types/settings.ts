@@ -16,6 +16,10 @@ export interface Layout {
   config: Config;
 }
 
+export enum ImageOrientation {
+  Landscape = 'landscape',
+  Portrait = 'portrait',
+}
 export interface Config {
   columns: number;
   rows: number;
@@ -23,6 +27,7 @@ export interface Config {
   itemsPerPage: number;
   autoPlay: boolean;
   showIndicators: boolean;
+  imageOrientation: ImageOrientation;
 }
 
 export interface Card {
