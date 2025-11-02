@@ -9,6 +9,7 @@ import { Plus, Search, Filter, MoreVertical, Edit, Trash2, Tag, ImageIcon } from
 import { ProductDialog } from "@/components/product-dialog"
 import { Badge } from "@/components/ui/badge"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { useProducts } from "@/app/hooks/useProducts"
 import { Product } from "@/app/types/product"
 import { Spinner } from "@/components/ui/spinner"
@@ -19,6 +20,7 @@ export default function ProductsPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
   const [isSaving, setIsSaving] = useState(false)
+  const [previewImage, setPreviewImage] = useState<string | null>(null)
 
   // Fetch products using SWR hook
   const { products, isLoading, isError, mutate, createProduct, updateProduct, deleteProduct } = useProducts()
@@ -135,8 +137,21 @@ export default function ProductsPage() {
           filteredProducts.map((product) => (
             <Card key={product.id} className="p-6 bg-card border-border hover:border-primary/50 transition-colors">
               <div className="flex items-start gap-4">
-                <div className="w-20 h-20 rounded-lg bg-secondary flex items-center justify-center">
-                  <ImageIcon className="h-8 w-8 text-muted-foreground" />
+                <div 
+                  className={`w-20 h-20 rounded-lg bg-secondary flex items-center justify-center overflow-hidden ${
+                    product.imageUrl ? 'cursor-pointer hover:opacity-80 transition-opacity' : ''
+                  }`}
+                  onClick={() => product.imageUrl && setPreviewImage(product.imageUrl)}
+                >
+                  {product.imageUrl ? (
+                    <img
+                      src={product.imageUrl}
+                      alt={product.name}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <ImageIcon className="h-8 w-8 text-muted-foreground" />
+                  )}
                 </div>
 
                 <div className="flex-1 min-w-0">
@@ -160,13 +175,6 @@ export default function ProductsPage() {
                           <Edit className="h-4 w-4 mr-2" />
                           Edit
                         </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => router.push(`/dashboard/products/${product.id}/banner`)}
-                          className="text-foreground"
-                        >
-                          <ImageIcon className="h-4 w-4 mr-2" />
-                          Edit Banner
-                        </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleDeleteProduct(product.id)} className="text-destructive">
                           <Trash2 className="h-4 w-4 mr-2" />
                           Delete
@@ -182,6 +190,18 @@ export default function ProductsPage() {
                         {product.currency} {product.price.toFixed(2)}
                       </p>
                     </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 mt-4">
+                    <Button
+                      onClick={() => router.push(`/dashboard/products/${product.id}/images`)}
+                      variant="outline"
+                      size="sm"
+                      className="border-primary/30 text-primary hover:bg-primary/10"
+                    >
+                      <ImageIcon className="h-4 w-4 mr-2" />
+                      Generate Images
+                    </Button>
                   </div>
 
                   {product.tags && product.tags.length > 0 && (
@@ -213,6 +233,20 @@ export default function ProductsPage() {
         onSave={handleSaveProduct}
         isSaving={isSaving}
       />
+
+      <Dialog open={!!previewImage} onOpenChange={(open) => !open && setPreviewImage(null)}>
+        <DialogContent className="max-w-4xl w-full p-0 bg-transparent border-0">
+          {previewImage && (
+            <div className="relative w-full h-full flex items-center justify-center">
+              <img
+                src={previewImage}
+                alt="Product preview"
+                className="max-w-full max-h-[80vh] object-contain rounded-lg"
+              />
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
