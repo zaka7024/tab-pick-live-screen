@@ -10,6 +10,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { ArrowLeft, ImageIcon, Loader2, Check, Upload, X, Package, Tag } from "lucide-react"
 import { useProducts } from "@/app/hooks/useProducts"
 import { Spinner } from "@/components/ui/spinner"
+import { Dialog, DialogContent } from "@/components/ui/dialog"
 
 type ImageType = "product" | "offer"
 
@@ -29,19 +30,18 @@ export default function ProductImageGeneratorPage({ params }: { params: { id: st
   const [generatedOptions, setGeneratedOptions] = useState<GeneratedOption[]>([])
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null)
   const [isDragging, setIsDragging] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
+  const [previewImage, setPreviewImage] = useState<string | null>(null)
 
-  // Fetch products to get current product data
-  const { products, isLoading: isLoadingProducts } = useProducts()
+  const { products, isLoading: isLoadingProducts, updateProduct } = useProducts()
   const product = products?.find((p) => p.id === params.id)
 
   const processFile = (file: File) => {
-    // Validate file type
     if (!file.type.startsWith("image/")) {
       alert("Please upload an image file")
       return
     }
 
-    // Validate file size (10MB)
     if (file.size > 10 * 1024 * 1024) {
       alert("File size must be less than 10MB")
       return
@@ -101,22 +101,16 @@ export default function ProductImageGeneratorPage({ params }: { params: { id: st
     setSelectedOptionId(null)
 
     try {
-      // Create FormData for the API request
       const formData = new FormData()
 
-      // Add file if provided
       if (referenceImage) {
         formData.append("referenceImage", referenceImage)
       }
-
-      // Add productId
-      formData.append("productId", product.id)
-
-      // Map imageType: "product" -> "single-product", "offer" -> "offer"
       const apiImageType = imageType === "product" ? "single-product" : "offer"
+
+      formData.append("productId", product.id)
       formData.append("imageType", apiImageType)
 
-      // Call the API route
       const response = await fetch("/api/product-image-generations", {
         method: "POST",
         body: formData,
@@ -155,17 +149,24 @@ export default function ProductImageGeneratorPage({ params }: { params: { id: st
   }
 
   const handleSave = async () => {
-    if (!selectedOptionId) return
+    if (!selectedOptionId || !product) return
 
     const selectedOption = generatedOptions.find((opt) => opt.id === selectedOptionId)
     if (!selectedOption) return
 
-    // In real app, save the selected image to the product
-    console.log("Saving selected image:", selectedOption.url)
-    // TODO: Call API to save the selected image
-    
-    // Navigate back to products page
-    router.push("/dashboard/products")
+    try {
+      setIsSaving(true)
+      await updateProduct(product.id, {
+        imageUrl: selectedOption.url,
+      })
+
+      router.push("/dashboard/products")
+    } catch (error) {
+      console.error("Error saving image:", error)
+      alert("Failed to save image. Please try again.")
+    } finally {
+      setIsSaving(false)
+    }
   }
 
   if (isLoadingProducts) {
@@ -351,7 +352,13 @@ export default function ProductImageGeneratorPage({ params }: { params: { id: st
                       onClick={() => handleSelectOption(option.id)}
                     >
                       <div className="space-y-3">
-                        <div className="relative aspect-video rounded-t-lg overflow-hidden bg-muted">
+                        <div 
+                          className="relative  rounded-t-lg overflow-hidden bg-muted cursor-pointer hover:opacity-90 transition-opacity"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setPreviewImage(option.url)
+                          }}
+                        >
                           <img
                             src={option.url || "/placeholder.svg"}
                             alt={`Generated option ${option.id}`}
@@ -366,7 +373,7 @@ export default function ProductImageGeneratorPage({ params }: { params: { id: st
                             </div>
                           )}
                         </div>
-                        <div className="p-3">
+                        <div className="p-1">
                           <Button
                             variant={option.isSelected ? "default" : "outline"}
                             className="w-full"
@@ -392,11 +399,26 @@ export default function ProductImageGeneratorPage({ params }: { params: { id: st
 
                 {selectedOptionId && (
                   <div className="flex justify-end gap-4 pt-4 border-t border-border">
-                    <Button variant="outline" onClick={() => router.push("/dashboard/products")}>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => router.push("/dashboard/products")}
+                      disabled={isSaving}
+                    >
                       Cancel
                     </Button>
-                    <Button onClick={handleSave} className="bg-primary text-primary-foreground hover:bg-primary/90">
-                      Save Selected Image
+                    <Button 
+                      onClick={handleSave} 
+                      className="bg-primary text-primary-foreground hover:bg-primary/90"
+                      disabled={isSaving}
+                    >
+                      {isSaving ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Saving...
+                        </>
+                      ) : (
+                        "Save Selected Image"
+                      )}
                     </Button>
                   </div>
                 )}
@@ -405,6 +427,20 @@ export default function ProductImageGeneratorPage({ params }: { params: { id: st
           </div>
         </Card>
       </div>
+
+      <Dialog open={!!previewImage} onOpenChange={(open) => !open && setPreviewImage(null)}>
+        <DialogContent className="max-w-4xl w-full p-0 bg-transparent border-0">
+          {previewImage && (
+            <div className="relative w-full h-full flex items-center justify-center">
+              <img
+                src={previewImage}
+                alt="Generated image preview"
+                className="max-w-full max-h-[80vh] object-contain rounded-lg"
+              />
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
