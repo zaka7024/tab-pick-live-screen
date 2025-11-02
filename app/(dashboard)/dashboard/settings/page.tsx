@@ -1,22 +1,26 @@
 "use client"
 
-import { useReducer, useEffect, useState } from "react"
+import { useReducer, useEffect, useState, useRef } from "react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Palette, Layout, Eye, Save } from "lucide-react"
+import { Palette, Layout, Eye, Save, Upload, X, ImageIcon } from "lucide-react"
 import { Slider } from "@/components/ui/slider"
 import { Input } from "@/components/ui/input"
 import { useSettings } from "@/app/hooks/useSettings"
 import { Spinner } from "@/components/ui/spinner"
 import { toast } from "sonner"
 import { PreviewDialog } from "@/components/preview"
+import { ImageOrientation } from "@/app/types/settings"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 interface SettingsState {
   theme: {
     primaryColor: string
     secondaryColor: string
+    logoUrl?: string
+    fontFamily?: string
   }
   layout: {
     style: string
@@ -38,6 +42,8 @@ interface SettingsState {
 
 type SettingsAction =
   | { type: 'SET_THEME_COLOR'; field: 'primaryColor' | 'secondaryColor'; value: string }
+  | { type: 'SET_LOGO_URL'; value: string }
+  | { type: 'SET_FONT_FAMILY'; value: string }
   | { type: 'SET_LAYOUT_STYLE'; value: string }
   | { type: 'SET_LAYOUT_COLUMNS'; value: number }
   | { type: 'SET_LAYOUT_ROWS'; value: number }
@@ -52,6 +58,8 @@ const initialState: SettingsState = {
   theme: {
     primaryColor: "#4EB2F1",
     secondaryColor: "#6366F1",
+    logoUrl: undefined,
+    fontFamily: undefined,
   },
   layout: {
     style: "carousel",
@@ -79,6 +87,22 @@ function settingsReducer(state: SettingsState, action: SettingsAction): Settings
         theme: {
           ...state.theme,
           [action.field]: action.value,
+        },
+      }
+    case 'SET_LOGO_URL':
+      return {
+        ...state,
+        theme: {
+          ...state.theme,
+          logoUrl: action.value,
+        },
+      }
+    case 'SET_FONT_FAMILY':
+      return {
+        ...state,
+        theme: {
+          ...state.theme,
+          fontFamily: action.value === '' ? undefined : action.value,
         },
       }
     case 'SET_LAYOUT_STYLE':
@@ -163,6 +187,8 @@ export default function DisplayPage() {
   const [state, dispatch] = useReducer(settingsReducer, initialState)
   const [isSaving, setIsSaving] = useState(false)
   const [previewOpen, setPreviewOpen] = useState(false)
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     if (settings) {
@@ -172,6 +198,8 @@ export default function DisplayPage() {
           theme: {
             primaryColor: settings.theme.primaryColor,
             secondaryColor: settings.theme.secondaryColor,
+            logoUrl: settings.theme.logoUrl,
+            fontFamily: settings.theme.fontFamily,
           },
           layout: {
             style: settings.layout.style,
@@ -189,6 +217,65 @@ export default function DisplayPage() {
     }
   }, [settings])
 
+  const handleLogoUpload = async (file: File) => {
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please upload an image file")
+      return
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("File size must be less than 10MB")
+      return
+    }
+
+    setIsUploadingLogo(true)
+    try {
+      const formData = new FormData()
+      formData.append("file", file)
+
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.error || "Failed to upload logo")
+      }
+
+      const data = await response.json()
+      
+      const logoUrl = data.payload?.fileUrl
+      
+      if (logoUrl) {
+        dispatch({ type: 'SET_LOGO_URL', value: logoUrl })
+        toast.success("Logo uploaded successfully!")
+      } else {
+        throw new Error("Invalid response format from API")
+      }
+    } catch (error) {
+      console.error("Error uploading logo:", error)
+      toast.error(error instanceof Error ? error.message : "Failed to upload logo. Please try again.")
+    } finally {
+      setIsUploadingLogo(false)
+    }
+  }
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      handleLogoUpload(file)
+    }
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ""
+    }
+  }
+
+  const handleRemoveLogo = () => {
+    dispatch({ type: 'SET_LOGO_URL', value: '' })
+    toast.success("Logo removed")
+  }
+
   const handleSaveSettings = async () => {
     try {
       setIsSaving(true)
@@ -197,6 +284,8 @@ export default function DisplayPage() {
         theme: {
           primaryColor: state.theme.primaryColor,
           secondaryColor: state.theme.secondaryColor,
+          logoUrl: state.theme.logoUrl || undefined,
+          fontFamily: state.theme.fontFamily || undefined,
         },
         layout: {
           style: state.layout.style,
@@ -207,6 +296,7 @@ export default function DisplayPage() {
             itemsPerPage: settings?.layout.config.itemsPerPage || 10,
             autoPlay: settings?.layout.config.autoPlay || false,
             showIndicators: settings?.layout.config.showIndicators || true,
+            imageOrientation: settings?.layout.config.imageOrientation || ImageOrientation.Landscape,
           },
         },
         card: {
@@ -341,6 +431,109 @@ export default function DisplayPage() {
                 />
               </div>
               <p className="text-xs text-muted-foreground">Used for accents and secondary elements</p>
+            </div>
+
+            <div className="space-y-3">
+              <Label className="text-foreground font-medium">Font Family</Label>
+              <Select
+                value={state.theme.fontFamily || 'default'}
+                onValueChange={(value) => dispatch({ type: 'SET_FONT_FAMILY', value: value === 'default' ? '' : value })}
+              >
+                <SelectTrigger className="w-full bg-secondary border-border text-foreground">
+                  <SelectValue placeholder="Select a font family" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="default">Default</SelectItem>
+                  <SelectItem value="Inter">Inter</SelectItem>
+                  <SelectItem value="Roboto">Roboto</SelectItem>
+                  <SelectItem value="Open Sans">Open Sans</SelectItem>
+                  <SelectItem value="Lato">Lato</SelectItem>
+                  <SelectItem value="Montserrat">Montserrat</SelectItem>
+                  <SelectItem value="Poppins">Poppins</SelectItem>
+                  <SelectItem value="Raleway">Raleway</SelectItem>
+                  <SelectItem value="Source Sans Pro">Source Sans Pro</SelectItem>
+                  <SelectItem value="Nunito">Nunito</SelectItem>
+                  <SelectItem value="Playfair Display">Playfair Display</SelectItem>
+                  <SelectItem value="Merriweather">Merriweather</SelectItem>
+                  <SelectItem value="Oswald">Oswald</SelectItem>
+                  <SelectItem value="Ubuntu">Ubuntu</SelectItem>
+                  <SelectItem value="Lora">Lora</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">Choose the font family for your theme</p>
+            </div>
+
+            <div className="space-y-3">
+              <Label className="text-foreground font-medium">Logo</Label>
+              <div className="space-y-3">
+                {state.theme.logoUrl ? (
+                  <div className="flex items-center gap-4 p-4 border border-border rounded-lg bg-secondary/50">
+                    <div className="relative w-24 h-24 flex items-center justify-center bg-card rounded border border-border overflow-hidden">
+                      <img
+                        src={state.theme.logoUrl}
+                        alt="Logo preview"
+                        className="max-w-full max-h-full object-contain"
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm text-foreground font-medium">Logo uploaded</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Your logo will be displayed in the theme
+                      </p>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={handleRemoveLogo}
+                      className="text-destructive hover:text-destructive"
+                    >
+                      <X className="h-4 w-4 mr-2" />
+                      Remove
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="border-2 border-dashed border-border rounded-lg p-6 bg-secondary/50">
+                    <div className="flex flex-col items-center justify-center text-center">
+                      <div className="p-3 rounded-full bg-primary/10 mb-3">
+                        <ImageIcon className="h-6 w-6 text-primary" />
+                      </div>
+                      <p className="text-sm font-medium text-foreground mb-1">Upload your logo</p>
+                      <p className="text-xs text-muted-foreground mb-4">
+                        PNG, JPG up to 10MB
+                      </p>
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFileChange}
+                        className="hidden"
+                        id="logo-upload"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={isUploadingLogo}
+                        className="bg-secondary hover:bg-secondary/80"
+                      >
+                        {isUploadingLogo ? (
+                          <>
+                            <Spinner className="h-4 w-4 mr-2" />
+                            Uploading...
+                          </>
+                        ) : (
+                          <>
+                            <Upload className="h-4 w-4 mr-2" />
+                            Choose File
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground">Upload your brand logo to display in the theme</p>
             </div>
           </div>
         </Card>

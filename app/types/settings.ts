@@ -9,6 +9,8 @@ export interface Settings {
 export interface Theme {
   primaryColor: string;
   secondaryColor: string;
+  logoUrl?: string;
+  fontFamily?: string;
 }
 
 export interface Layout {
