@@ -122,7 +122,9 @@ export function AppSidebar() {
                         side: isRTL ? 'left' : 'right',
                         align: 'center',
                       }}
-                      className={isRTL ? 'flex-row-reverse' : undefined}
+                      className={cn(
+                        isRTL ? 'flex-row' : undefined,
+                      )}
                     >
                       <Link href={item.href}>
                         <Icon />
