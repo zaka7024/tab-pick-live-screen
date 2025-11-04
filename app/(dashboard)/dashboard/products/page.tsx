@@ -13,8 +13,11 @@ import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { useProducts } from "@/app/hooks/useProducts"
 import { Product } from "@/app/types/product"
 import { Spinner } from "@/components/ui/spinner"
+import {useTranslations} from 'next-intl';
+
 
 export default function ProductsPage() {
+  const t = useTranslations('Products');
   const router = useRouter()
   const [searchQuery, setSearchQuery] = useState("")
   const [isDialogOpen, setIsDialogOpen] = useState(false)
@@ -37,12 +40,12 @@ export default function ProductsPage() {
 
   const handleDeleteProduct = async (id: string) => {
     try {
-      if (confirm('Are you sure you want to delete this product?')) {
+      if (confirm(t('deleteConfirm'))) {
         await deleteProduct(id)
       }
     } catch (error) {
       console.error('Failed to delete product:', error)
-      alert('Failed to delete product. Please try again.')
+      alert(t('deleteError'))
     }
   }
 
@@ -62,7 +65,7 @@ export default function ProductsPage() {
       setIsDialogOpen(false)
     } catch (error) {
       console.error('Failed to save product:', error)
-      alert('Failed to save product. Please try again.')
+      alert(t('saveError'))
     } finally {
       setIsSaving(false)
     }
@@ -80,7 +83,7 @@ export default function ProductsPage() {
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
           <Spinner className="h-8 w-8 mx-auto mb-4" />
-          <p className="text-muted-foreground">Loading products...</p>
+          <p className="text-muted-foreground">{t('loading')}</p>
         </div>
       </div>
     )
@@ -91,8 +94,8 @@ export default function ProductsPage() {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
-          <p className="text-destructive mb-4">Failed to load products</p>
-          <Button onClick={() => mutate()}>Try Again</Button>
+          <p className="text-destructive mb-4">{t('error')}</p>
+          <Button onClick={() => mutate()}>{t('tryAgain')}</Button>
         </div>
       </div>
     )
@@ -102,12 +105,12 @@ export default function ProductsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">Product Management</h1>
-          <p className="text-muted-foreground mt-2">Configure products and AI recommendation tags</p>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">{t('title')}</h1>
+          <p className="text-muted-foreground mt-2">{t('subtitle')}</p>
         </div>
         <Button onClick={handleAddProduct} className="bg-primary text-primary-foreground hover:bg-primary/90">
           <Plus className="h-4 w-4 mr-2" />
-          Add Product
+          {t('addProduct')}
         </Button>
       </div>
 
@@ -117,7 +120,7 @@ export default function ProductsPage() {
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               type="search"
-              placeholder="Search products..."
+              placeholder={t('searchPlaceholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10 bg-secondary border-border text-foreground"
@@ -130,7 +133,7 @@ export default function ProductsPage() {
         {filteredProducts.length === 0 ? (
           <Card className="p-12 bg-card border-border">
             <div className="text-center">
-              <p className="text-muted-foreground">No products found</p>
+              <p className="text-muted-foreground">{t('noProducts')}</p>
             </div>
           </Card>
         ) : (
@@ -173,11 +176,11 @@ export default function ProductsPage() {
                       <DropdownMenuContent align="end" className="bg-card border-border">
                         <DropdownMenuItem onClick={() => handleEditProduct(product)} className="text-foreground">
                           <Edit className="h-4 w-4 mr-2" />
-                          Edit
+                          {t('editProduct')}
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleDeleteProduct(product.id)} className="text-destructive">
                           <Trash2 className="h-4 w-4 mr-2" />
-                          Delete
+                          {t('delete')}
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -185,7 +188,7 @@ export default function ProductsPage() {
 
                   <div className="flex items-center gap-6 mt-4">
                     <div>
-                      <p className="text-xs text-muted-foreground">Price</p>
+                      <p className="text-xs text-muted-foreground">{t('price')}</p>
                       <p className="text-sm font-semibold text-foreground">
                         {product.currency} {product.price.toFixed(2)}
                       </p>
@@ -196,7 +199,7 @@ export default function ProductsPage() {
                     <div className="mt-4">
                       <div className="flex items-center gap-2 mb-2">
                         <Tag className="h-3 w-3 text-muted-foreground" />
-                        <p className="text-xs text-muted-foreground">Tags</p>
+                        <p className="text-xs text-muted-foreground">{t('tags')}</p>
                       </div>
                       <div className="flex flex-wrap gap-2">
                         {product.tags.map((tag, i) => (
@@ -216,7 +219,7 @@ export default function ProductsPage() {
                     >
                       <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></span>
                       <Sparkles className="h-4 w-4 mr-2 relative z-10" />
-                      <span className="relative z-10">Generate Images with AI</span>
+                      <span className="relative z-10">{t('generateImages')}</span>
                     </Button>
                   </div>
                 

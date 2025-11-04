@@ -14,11 +14,13 @@ import {
   FieldLabel,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
+import {useTranslations} from 'next-intl';
 
 export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
+  const t = useTranslations('Login');
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
@@ -38,13 +40,13 @@ export function LoginForm({
       })
 
       if (result?.error) {
-        setError("Invalid email or password")
+        setError(t('invalidCredentials'))
       } else if (result?.ok) {
         router.push("/dashboard/settings")
         router.refresh()
       }
     } catch (err) {
-      setError("An error occurred. Please try again.")
+      setError(t('error'))
     } finally {
       setIsLoading(false)
     }
@@ -62,9 +64,9 @@ export function LoginForm({
               <div className="flex size-8 items-center justify-center rounded-md">
                 <GalleryVerticalEnd className="size-6" />
               </div>
-              <span className="sr-only">ScreenSense</span>
+              <span className="sr-only">{t('screenReader')}</span>
             </a>
-            <h1 className="text-xl font-bold">Welcome to ScreenSense</h1>
+            <h1 className="text-xl font-bold">{t('title')}</h1>
           </div>
           {error && (
             <div className="text-sm text-red-500 text-center p-2 bg-red-50 rounded-md">
@@ -72,11 +74,11 @@ export function LoginForm({
             </div>
           )}
           <Field>
-            <FieldLabel htmlFor="email">Email</FieldLabel>
+            <FieldLabel htmlFor="email">{t('email')}</FieldLabel>
             <Input
               id="email"
               type="email"
-              placeholder="m@example.com"
+              placeholder={t('emailPlaceholder')}
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -84,11 +86,11 @@ export function LoginForm({
             />
           </Field>
           <Field>
-            <FieldLabel htmlFor="password">Password</FieldLabel>
+            <FieldLabel htmlFor="password">{t('password')}</FieldLabel>
             <Input
               id="password"
               type="password"
-              placeholder="********"
+              placeholder={t('passwordPlaceholder')}
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -97,7 +99,7 @@ export function LoginForm({
           </Field>
           <Field>
             <Button type="submit" disabled={isLoading}>
-              {isLoading ? "Logging in..." : "Login"}
+              {isLoading ? t('loggingIn') : t('login')}
             </Button>
           </Field>
         </FieldGroup>

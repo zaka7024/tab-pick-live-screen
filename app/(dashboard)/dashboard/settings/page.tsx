@@ -14,6 +14,7 @@ import { toast } from "sonner"
 import { PreviewDialog } from "@/components/preview"
 import { ImageOrientation } from "@/app/types/settings"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import {useTranslations} from 'next-intl';
 
 interface SettingsState {
   theme: {
@@ -183,6 +184,7 @@ function settingsReducer(state: SettingsState, action: SettingsAction): Settings
 }
 
 export default function DisplayPage() {
+  const t = useTranslations('Settings');
   const { settings, isLoading, isError, updateSettings, mutate } = useSettings()
   const [state, dispatch] = useReducer(settingsReducer, initialState)
   const [isSaving, setIsSaving] = useState(false)
@@ -219,12 +221,12 @@ export default function DisplayPage() {
 
   const handleLogoUpload = async (file: File) => {
     if (!file.type.startsWith("image/")) {
-      toast.error("Please upload an image file")
+      toast.error(t('uploadImageError'))
       return
     }
 
     if (file.size > 10 * 1024 * 1024) {
-      toast.error("File size must be less than 10MB")
+      toast.error(t('fileSizeError'))
       return
     }
 
@@ -240,7 +242,7 @@ export default function DisplayPage() {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
-        throw new Error(errorData.error || "Failed to upload logo")
+        throw new Error(errorData.error || t('uploadError'))
       }
 
       const data = await response.json()
@@ -249,13 +251,13 @@ export default function DisplayPage() {
       
       if (logoUrl) {
         dispatch({ type: 'SET_LOGO_URL', value: logoUrl })
-        toast.success("Logo uploaded successfully!")
+        toast.success(t('uploadSuccess'))
       } else {
-        throw new Error("Invalid response format from API")
+        throw new Error(t('invalidResponse'))
       }
     } catch (error) {
       console.error("Error uploading logo:", error)
-      toast.error(error instanceof Error ? error.message : "Failed to upload logo. Please try again.")
+      toast.error(error instanceof Error ? error.message : t('uploadErrorRetry'))
     } finally {
       setIsUploadingLogo(false)
     }
@@ -273,7 +275,7 @@ export default function DisplayPage() {
 
   const handleRemoveLogo = () => {
     dispatch({ type: 'SET_LOGO_URL', value: '' })
-    toast.success("Logo removed")
+    toast.success(t('logoRemoved'))
   }
 
   const handleSaveSettings = async () => {
@@ -305,10 +307,10 @@ export default function DisplayPage() {
         },
       })
       
-      toast.success("Settings saved successfully!")
+      toast.success(t('saveSuccess'))
     } catch (error) {
       console.error('Failed to save settings:', error)
-      toast.error("Failed to save settings. Please try again.")
+      toast.error(t('saveError'))
     } finally {
       setIsSaving(false)
     }
@@ -319,7 +321,7 @@ export default function DisplayPage() {
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
           <Spinner className="h-8 w-8 mx-auto mb-4" />
-          <p className="text-muted-foreground">Loading settings...</p>
+          <p className="text-muted-foreground">{t('loading')}</p>
         </div>
       </div>
     )
@@ -329,8 +331,8 @@ export default function DisplayPage() {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
-          <p className="text-destructive mb-4">Failed to load settings</p>
-          <Button onClick={() => mutate()}>Try Again</Button>
+          <p className="text-destructive mb-4">{t('error')}</p>
+          <Button onClick={() => mutate()}>{t('tryAgain')}</Button>
         </div>
       </div>
     )
@@ -340,9 +342,9 @@ export default function DisplayPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">Settings</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">{t('title')}</h1>
           <p className="text-muted-foreground mt-2">
-            Customize themes, layouts, visual styles for product recommendations, and ai generation settings.
+            {t('subtitle')}
           </p>
         </div>
         <Button 
@@ -353,12 +355,12 @@ export default function DisplayPage() {
           {isSaving ? (
             <>
               <Spinner className="h-4 w-4 mr-2" />
-              Saving...
+              {t('saving')}
             </>
           ) : (
             <>
               <Save className="h-4 w-4 mr-2" />
-              Save Changes
+              {t('saveChanges')}
             </>
           )}
         </Button>
@@ -387,14 +389,14 @@ export default function DisplayPage() {
               <Palette className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-foreground">Brand Colors</h3>
-              <p className="text-sm text-muted-foreground">Configure your brand color palette</p>
+              <h3 className="text-lg font-semibold text-foreground">{t('brandColors')}</h3>
+              <p className="text-sm text-muted-foreground">{t('brandColorsDescription')}</p>
             </div>
           </div>
 
           <div className="space-y-6">
             <div className="space-y-3">
-              <Label className="text-foreground font-medium">Primary Color</Label>
+              <Label className="text-foreground font-medium">{t('primaryColor')}</Label>
               <div className="flex gap-3 items-center">
                 <Input
                   type="color"
@@ -410,11 +412,11 @@ export default function DisplayPage() {
                   placeholder="#4EB2F1"
                 />
               </div>
-              <p className="text-xs text-muted-foreground">Used for buttons, links, and primary actions</p>
+              <p className="text-xs text-muted-foreground">{t('primaryColorDescription')}</p>
             </div>
 
             <div className="space-y-3">
-              <Label className="text-foreground font-medium">Secondary Color</Label>
+              <Label className="text-foreground font-medium">{t('secondaryColor')}</Label>
               <div className="flex gap-3 items-center">
                 <Input
                   type="color"
@@ -430,20 +432,20 @@ export default function DisplayPage() {
                   placeholder="#6366F1"
                 />
               </div>
-              <p className="text-xs text-muted-foreground">Used for accents and secondary elements</p>
+              <p className="text-xs text-muted-foreground">{t('secondaryColorDescription')}</p>
             </div>
 
             <div className="space-y-3">
-              <Label className="text-foreground font-medium">Font Family</Label>
+              <Label className="text-foreground font-medium">{t('fontFamily')}</Label>
               <Select
                 value={state.theme.fontFamily || 'default'}
                 onValueChange={(value) => dispatch({ type: 'SET_FONT_FAMILY', value: value === 'default' ? '' : value })}
               >
                 <SelectTrigger className="w-full bg-secondary border-border text-foreground">
-                  <SelectValue placeholder="Select a font family" />
+                  <SelectValue placeholder={t('fontFamilyPlaceholder')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="default">Default</SelectItem>
+                  <SelectItem value="default">{t('default')}</SelectItem>
                   <SelectItem value="Inter">Inter</SelectItem>
                   <SelectItem value="Roboto">Roboto</SelectItem>
                   <SelectItem value="Open Sans">Open Sans</SelectItem>
@@ -460,25 +462,25 @@ export default function DisplayPage() {
                   <SelectItem value="Lora">Lora</SelectItem>
                 </SelectContent>
               </Select>
-              <p className="text-xs text-muted-foreground">Choose the font family for your theme</p>
+              <p className="text-xs text-muted-foreground">{t('fontFamilyDescription')}</p>
             </div>
 
             <div className="space-y-3">
-              <Label className="text-foreground font-medium">Logo</Label>
+              <Label className="text-foreground font-medium">{t('logo')}</Label>
               <div className="space-y-3">
                 {state.theme.logoUrl ? (
                   <div className="flex items-center gap-4 p-4 border border-border rounded-lg bg-secondary/50">
                     <div className="relative w-24 h-24 flex items-center justify-center bg-card rounded border border-border overflow-hidden">
                       <img
                         src={state.theme.logoUrl}
-                        alt="Logo preview"
+                        alt={t('logoPreview')}
                         className="max-w-full max-h-full object-contain"
                       />
                     </div>
                     <div className="flex-1">
-                      <p className="text-sm text-foreground font-medium">Logo uploaded</p>
+                      <p className="text-sm text-foreground font-medium">{t('logoUploaded')}</p>
                       <p className="text-xs text-muted-foreground mt-1">
-                        Your logo will be displayed in the theme
+                        {t('logoUploadedDescription')}
                       </p>
                     </div>
                     <Button
@@ -489,7 +491,7 @@ export default function DisplayPage() {
                       className="text-destructive hover:text-destructive"
                     >
                       <X className="h-4 w-4 mr-2" />
-                      Remove
+                      {t('remove')}
                     </Button>
                   </div>
                 ) : (
@@ -498,9 +500,9 @@ export default function DisplayPage() {
                       <div className="p-3 rounded-full bg-primary/10 mb-3">
                         <ImageIcon className="h-6 w-6 text-primary" />
                       </div>
-                      <p className="text-sm font-medium text-foreground mb-1">Upload your logo</p>
+                      <p className="text-sm font-medium text-foreground mb-1">{t('uploadLogo')}</p>
                       <p className="text-xs text-muted-foreground mb-4">
-                        PNG, JPG up to 10MB
+                        {t('logoFileTypes')}
                       </p>
                       <input
                         ref={fileInputRef}
@@ -520,12 +522,12 @@ export default function DisplayPage() {
                         {isUploadingLogo ? (
                           <>
                             <Spinner className="h-4 w-4 mr-2" />
-                            Uploading...
+                            {t('uploading')}
                           </>
                         ) : (
                           <>
                             <Upload className="h-4 w-4 mr-2" />
-                            Choose File
+                            {t('chooseFile')}
                           </>
                         )}
                       </Button>
@@ -533,7 +535,7 @@ export default function DisplayPage() {
                   </div>
                 )}
               </div>
-              <p className="text-xs text-muted-foreground">Upload your brand logo to display in the theme</p>
+              <p className="text-xs text-muted-foreground">{t('uploadLogoDescription')}</p>
             </div>
           </div>
         </Card>

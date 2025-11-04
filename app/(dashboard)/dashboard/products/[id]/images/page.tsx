@@ -11,6 +11,7 @@ import { ArrowLeft, ImageIcon, Loader2, Check, Upload, X, Package, Tag } from "l
 import { useProducts } from "@/app/hooks/useProducts"
 import { Spinner } from "@/components/ui/spinner"
 import { Dialog, DialogContent } from "@/components/ui/dialog"
+import {useTranslations} from 'next-intl';
 
 type ImageType = "product" | "offer"
 
@@ -21,6 +22,7 @@ interface GeneratedOption {
 }
 
 export default function ProductImageGeneratorPage({ params }: { params: { id: string } }) {
+  const t = useTranslations('ProductImageGenerator');
   const router = useRouter()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const generatedImagesRef = useRef<HTMLDivElement>(null)
@@ -53,12 +55,12 @@ export default function ProductImageGeneratorPage({ params }: { params: { id: st
 
   const processFile = (file: File) => {
     if (!file.type.startsWith("image/")) {
-      alert("Please upload an image file")
+      alert(t('uploadImageError'))
       return
     }
 
     if (file.size > 10 * 1024 * 1024) {
-      alert("File size must be less than 10MB")
+      alert(t('fileSizeError'))
       return
     }
 
@@ -133,7 +135,7 @@ export default function ProductImageGeneratorPage({ params }: { params: { id: st
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
-        throw new Error(errorData.error || "Failed to generate images")
+        throw new Error(errorData.error || t('generateError'))
       }
 
       const data = await response.json()
@@ -148,11 +150,11 @@ export default function ProductImageGeneratorPage({ params }: { params: { id: st
         )
         setGeneratedOptions(newOptions)
       } else {
-        throw new Error("Invalid response format from API")
+        throw new Error(t('invalidResponse'))
       }
     } catch (error) {
       console.error("Error generating images:", error)
-      alert(error instanceof Error ? error.message : "Failed to generate images. Please try again.")
+      alert(error instanceof Error ? error.message : t('generateErrorRetry'))
     } finally {
       setIsGenerating(false)
     }
@@ -178,7 +180,7 @@ export default function ProductImageGeneratorPage({ params }: { params: { id: st
       router.push("/dashboard/products")
     } catch (error) {
       console.error("Error saving image:", error)
-      alert("Failed to save image. Please try again.")
+      alert(t('saveError'))
     } finally {
       setIsSaving(false)
     }
@@ -189,7 +191,7 @@ export default function ProductImageGeneratorPage({ params }: { params: { id: st
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
           <Spinner className="h-8 w-8 mx-auto mb-4" />
-          <p className="text-muted-foreground">Loading product...</p>
+          <p className="text-muted-foreground">{t('loading')}</p>
         </div>
       </div>
     )
@@ -199,8 +201,8 @@ export default function ProductImageGeneratorPage({ params }: { params: { id: st
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
-          <p className="text-destructive mb-4">Product not found</p>
-          <Button onClick={() => router.push("/dashboard/products")}>Go Back</Button>
+          <p className="text-destructive mb-4">{t('notFound')}</p>
+          <Button onClick={() => router.push("/dashboard/products")}>{t('goBack')}</Button>
         </div>
       </div>
     )
@@ -218,7 +220,7 @@ export default function ProductImageGeneratorPage({ params }: { params: { id: st
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">Product Image Generator</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">{t('title')}</h1>
           <p className="text-muted-foreground mt-2">{product.name}</p>
         </div>
       </div>
@@ -228,33 +230,33 @@ export default function ProductImageGeneratorPage({ params }: { params: { id: st
           <div className="space-y-6">
             {/* Image Type Selection */}
             <div className="space-y-3">
-              <Label className="text-base font-semibold text-foreground">Image Type</Label>
+              <Label className="text-base font-semibold text-foreground">{t('imageType')}</Label>
               <RadioGroup value={imageType} onValueChange={(value) => setImageType(value as ImageType)}>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="product" id="product" />
                   <Label htmlFor="product" className="flex items-center gap-2 cursor-pointer">
                     <Package className="h-4 w-4" />
-                    <span>Product Image</span>
+                    <span>{t('productImage')}</span>
                   </Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="offer" id="offer" />
                   <Label htmlFor="offer" className="flex items-center gap-2 cursor-pointer">
                     <Tag className="h-4 w-4" />
-                    <span>Offer (Multiple Items)</span>
+                    <span>{t('offerImage')}</span>
                   </Label>
                 </div>
               </RadioGroup>
               <p className="text-sm text-muted-foreground">
                 {imageType === "product"
-                  ? "Generate a single product image."
-                  : "Generate an offer image with multiple items."}
+                  ? t('productImageDescription')
+                  : t('offerImageDescription')}
               </p>
             </div>
 
             {/* Reference Image Upload */}
             <div className="space-y-3">
-              <Label className="text-base font-semibold text-foreground">Reference Image (Optional)</Label>
+              <Label className="text-base font-semibold text-foreground">{t('referenceImage')}</Label>
               {!referenceImagePreview ? (
                 <div
                   onDragOver={handleDragOver}
@@ -271,12 +273,12 @@ export default function ProductImageGeneratorPage({ params }: { params: { id: st
                     <div className="text-center">
                       <Label htmlFor="reference-image" className="cursor-pointer">
                         <span className="text-sm font-medium text-primary hover:underline">
-                          Click to upload
+                          {t('clickToUpload')}
                         </span>
-                        <span className="text-sm text-muted-foreground"> or drag and drop</span>
+                        <span className="text-sm text-muted-foreground"> {t('dragAndDrop')}</span>
                       </Label>
                       <p className="text-xs text-muted-foreground mt-1">
-                        PNG, JPG, GIF up to 10MB
+                        {t('fileTypes')}
                       </p>
                     </div>
                     <input
@@ -294,7 +296,7 @@ export default function ProductImageGeneratorPage({ params }: { params: { id: st
                   <div className="relative aspect-video rounded-lg overflow-hidden bg-muted border border-border">
                     <img
                       src={referenceImagePreview}
-                      alt="Reference preview"
+                      alt={t('referencePreview')}
                       className="w-full h-full object-cover"
                     />
                     <Button
@@ -323,12 +325,12 @@ export default function ProductImageGeneratorPage({ params }: { params: { id: st
               {isGenerating ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Generating Images...
+                  {t('generating')}
                 </>
               ) : (
                 <>
                   <ImageIcon className="h-4 w-4 mr-2" />
-                  Generate Images
+                  {t('generateImages')}
                 </>
               )}
             </Button>
@@ -337,16 +339,16 @@ export default function ProductImageGeneratorPage({ params }: { params: { id: st
             {isGenerating && (
               <div className="text-center py-12">
                 <Loader2 className="h-12 w-12 mx-auto mb-4 animate-spin text-primary" />
-                <p className="text-muted-foreground">Generating 3 image options...</p>
+                <p className="text-muted-foreground">{t('generatingOptions')}</p>
               </div>
             )}
 
             {generatedOptions.length > 0 && (
               <div ref={generatedImagesRef} className="space-y-4">
                 <div>
-                  <h2 className="text-lg font-semibold text-foreground mb-4">Select an Image</h2>
+                  <h2 className="text-lg font-semibold text-foreground mb-4">{t('selectImage')}</h2>
                   <p className="text-sm text-muted-foreground mb-4">
-                    Choose one of the generated images to use for this product.
+                    {t('selectImageDescription')}
                   </p>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -370,14 +372,14 @@ export default function ProductImageGeneratorPage({ params }: { params: { id: st
                         >
                           <img
                             src={option.url || "/placeholder.svg"}
-                            alt={`Generated option ${option.id}`}
+                            alt={`${t('generatedOption')} ${option.id}`}
                             className="w-full h-full object-cover"
                           />
                           {option.isSelected && (
                             <div className="absolute top-2 right-2">
                               <Badge className="bg-primary text-primary-foreground">
                                 <Check className="h-3 w-3 mr-1" />
-                                Selected
+                                {t('selected')}
                               </Badge>
                             </div>
                           )}
@@ -394,10 +396,10 @@ export default function ProductImageGeneratorPage({ params }: { params: { id: st
                             {option.isSelected ? (
                               <>
                                 <Check className="h-4 w-4 mr-2" />
-                                Selected
+                                {t('selected')}
                               </>
                             ) : (
-                              "Select"
+                              t('select')
                             )}
                           </Button>
                         </div>
@@ -413,7 +415,7 @@ export default function ProductImageGeneratorPage({ params }: { params: { id: st
                       onClick={() => router.push("/dashboard/products")}
                       disabled={isSaving}
                     >
-                      Cancel
+                      {t('cancel')}
                     </Button>
                     <Button 
                       onClick={handleSave} 
@@ -423,10 +425,10 @@ export default function ProductImageGeneratorPage({ params }: { params: { id: st
                       {isSaving ? (
                         <>
                           <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                          Saving...
+                          {t('saving')}
                         </>
                       ) : (
-                        "Save Selected Image"
+                        t('saveSelected')
                       )}
                     </Button>
                   </div>
@@ -443,7 +445,7 @@ export default function ProductImageGeneratorPage({ params }: { params: { id: st
             <div className="relative w-full h-full flex items-center justify-center">
               <img
                 src={previewImage}
-                alt="Generated image preview"
+                alt={t('generatedPreview')}
                 className="max-w-full max-h-[80vh] object-contain rounded-lg"
               />
             </div>

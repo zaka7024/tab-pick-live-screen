@@ -14,33 +14,44 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from "@/components/ui/sidebar"
-
-const navItems = [
-  {
-    title: "Products",
-    href: "/dashboard/products",
-    icon: Package,
-  },
-  {
-    title: "Settings",
-    href: "/dashboard/settings",
-    icon: Settings,
-  },
-]
+import {useTranslations, useLocale} from 'next-intl';
+import { cn } from "@/lib/utils";
 
 export function AppSidebar() {
+  const t = useTranslations('Sidebar');
+  const locale = useLocale();
   const pathname = usePathname()
+  const isRTL = locale === 'ar'
+
+  const navItems = [
+    {
+      title: t('products'),
+      href: "/dashboard/products",
+      icon: Package,
+    },
+    {
+      title: t('settings'),
+      href: "/dashboard/settings",
+      icon: Settings,
+    },
+  ]
 
   return (
-    <Sidebar collapsible="icon">
+    <Sidebar collapsible="icon" side={isRTL ? "right" : "left"}>
       <SidebarHeader>
-        <div className="flex items-center gap-2 px-2 py-2">
+        <div className={cn(
+          "flex items-center gap-2 px-2 py-2",
+          isRTL && "flex-row-reverse"
+        )}>
           <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
             <Package className="size-4" />
           </div>
-          <div className="flex flex-col gap-0.5 leading-none">
+          <div className={cn(
+            "flex flex-col gap-0.5 leading-none",
+            isRTL && "items-end"
+          )}>
             <span className="font-semibold">ScreenSense</span>
-            <span className="text-xs text-muted-foreground">Dashboard</span>
+            <span className="text-xs text-muted-foreground">{t('dashboard')}</span>
           </div>
         </div>
       </SidebarHeader>
@@ -54,7 +65,16 @@ export function AppSidebar() {
 
                 return (
                   <SidebarMenuItem key={item.href}>
-                    <SidebarMenuButton asChild isActive={isActive} tooltip={item.title}>
+                    <SidebarMenuButton 
+                      asChild 
+                      isActive={isActive} 
+                      tooltip={{
+                        children: item.title,
+                        side: isRTL ? "left" : "right",
+                        align: "center"
+                      }}
+                      className={isRTL ? "flex-row-reverse" : undefined}
+                    >
                       <Link href={item.href}>
                         <Icon />
                         <span>{item.title}</span>
