@@ -365,7 +365,7 @@ export default function DisplayPage() {
       </div>
 
       <div className="space-y-6">
-        <Card className="p-6 bg-card border-border">
+        {/* <Card className="p-6 bg-card border-border">
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-lg font-semibold text-foreground">Live Preview</h3>
@@ -379,7 +379,7 @@ export default function DisplayPage() {
               Open Preview
             </Button>
           </div>
-        </Card>
+        </Card> */}
 
         <Card className="p-6 bg-card border-border">
           <div className="flex items-center gap-3 mb-6">
@@ -538,7 +538,7 @@ export default function DisplayPage() {
           </div>
         </Card>
 
-        <Card className="p-6 bg-card border-border">
+        {/* <Card className="p-6 bg-card border-border">
           <div className="flex items-center gap-3 mb-6">
             <div className="p-2 rounded-lg bg-primary/10">
               <Layout className="h-5 w-5 text-primary" />
@@ -662,9 +662,9 @@ export default function DisplayPage() {
               </div>
             )}
           </div>
-        </Card>
+        </Card> */}
 
-        <Card className="p-6 bg-card border-border">
+        {/* <Card className="p-6 bg-card border-border">
           <div className="flex items-center gap-3 mb-6">
             <div className="p-2 rounded-lg bg-primary/10">
               <Layout className="h-5 w-5 text-primary" />
@@ -727,7 +727,7 @@ export default function DisplayPage() {
               />
             </div>
           </div>
-        </Card>
+        </Card> */}
       </div>
 
       <PreviewDialog

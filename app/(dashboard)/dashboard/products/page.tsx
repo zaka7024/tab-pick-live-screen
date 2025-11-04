@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Plus, Search, Filter, MoreVertical, Edit, Trash2, Tag, ImageIcon } from "lucide-react"
+import { Plus, Search, Filter, MoreVertical, Edit, Trash2, Tag, ImageIcon, Sparkles } from "lucide-react"
 import { ProductDialog } from "@/components/product-dialog"
 import { Badge } from "@/components/ui/badge"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
@@ -192,18 +192,6 @@ export default function ProductsPage() {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2 mt-4">
-                    <Button
-                      onClick={() => router.push(`/dashboard/products/${product.id}/images`)}
-                      variant="outline"
-                      size="sm"
-                      className="border-primary/30 text-primary hover:bg-primary/10"
-                    >
-                      <ImageIcon className="h-4 w-4 mr-2" />
-                      Generate Images
-                    </Button>
-                  </div>
-
                   {product.tags && product.tags.length > 0 && (
                     <div className="mt-4">
                       <div className="flex items-center gap-2 mb-2">
@@ -219,6 +207,19 @@ export default function ProductsPage() {
                       </div>
                     </div>
                   )}
+
+                  <div className="flex items-center gap-2 mt-4">
+                    <Button
+                      onClick={() => router.push(`/dashboard/products/${product.id}/images`)}
+                      className="bg-gradient-to-r from-primary via-primary/90 to-primary text-primary-foreground hover:from-primary/90 hover:via-primary/80 hover:to-primary/90 shadow-md hover:shadow-xl transition-all duration-300 font-semibold border-0 relative overflow-hidden group cursor-pointer"
+                      size="default"
+                    >
+                      <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></span>
+                      <Sparkles className="h-4 w-4 mr-2 relative z-10" />
+                      <span className="relative z-10">Generate Images with AI</span>
+                    </Button>
+                  </div>
+                
                 </div>
               </div>
             </Card>

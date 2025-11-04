@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -23,6 +23,7 @@ interface GeneratedOption {
 export default function ProductImageGeneratorPage({ params }: { params: { id: string } }) {
   const router = useRouter()
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const generatedImagesRef = useRef<HTMLDivElement>(null)
   const [imageType, setImageType] = useState<ImageType>("product")
   const [referenceImage, setReferenceImage] = useState<File | null>(null)
   const [referenceImagePreview, setReferenceImagePreview] = useState<string | null>(null)
@@ -35,6 +36,20 @@ export default function ProductImageGeneratorPage({ params }: { params: { id: st
 
   const { products, isLoading: isLoadingProducts, updateProduct } = useProducts()
   const product = products?.find((p) => p.id === params.id)
+
+  // Scroll to generated images when they are ready
+  useEffect(() => {
+    if (generatedOptions.length > 0 && !isGenerating) {
+      // Use setTimeout to ensure DOM has updated and images are loaded
+      setTimeout(() => {
+        // Scroll to bottom of page to show all generated images
+        window.scrollTo({
+          top: document.documentElement.scrollHeight,
+          behavior: 'smooth'
+        })
+      }, 500)
+    }
+  }, [generatedOptions.length, isGenerating])
 
   const processFile = (file: File) => {
     if (!file.type.startsWith("image/")) {
@@ -232,8 +247,8 @@ export default function ProductImageGeneratorPage({ params }: { params: { id: st
               </RadioGroup>
               <p className="text-sm text-muted-foreground">
                 {imageType === "product"
-                  ? "Generate a single product image based on the product description."
-                  : "Generate an offer image with multiple items based on the product description."}
+                  ? "Generate a single product image."
+                  : "Generate an offer image with multiple items."}
               </p>
             </div>
 
@@ -298,12 +313,6 @@ export default function ProductImageGeneratorPage({ params }: { params: { id: st
               )}
             </div>
 
-            {/* Product Description Info */}
-            <div className="p-4 bg-muted rounded-lg border border-border">
-              <h4 className="text-sm font-semibold text-foreground mb-2">Product Description</h4>
-              <p className="text-sm text-muted-foreground">{product.description || "No description available."}</p>
-            </div>
-
             {/* Generate Button */}
             <Button
               onClick={handleGenerate}
@@ -333,7 +342,7 @@ export default function ProductImageGeneratorPage({ params }: { params: { id: st
             )}
 
             {generatedOptions.length > 0 && (
-              <div className="space-y-4">
+              <div ref={generatedImagesRef} className="space-y-4">
                 <div>
                   <h2 className="text-lg font-semibold text-foreground mb-4">Select an Image</h2>
                   <p className="text-sm text-muted-foreground mb-4">

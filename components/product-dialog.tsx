@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
-import { X, Sparkles } from "lucide-react"
+import { X } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Product } from "@/app/types/product"
 import { Textarea } from "@/components/ui/textarea"
@@ -30,7 +30,6 @@ export function ProductDialog({ open, onOpenChange, product, onSave, isSaving = 
     organizationId: "",
   })
   const [tagInput, setTagInput] = useState("")
-  const [isGeneratingTags, setIsGeneratingTags] = useState(false)
 
   useEffect(() => {
     if (product) {
@@ -63,20 +62,6 @@ export function ProductDialog({ open, onOpenChange, product, onSave, isSaving = 
       ...formData,
       tags: formData.tags?.filter((t) => t !== tag) || [],
     })
-  }
-
-  const handleGenerateAITags = () => {
-    setIsGeneratingTags(true)
-    // Simulate AI tag generation
-    setTimeout(() => {
-      const suggestedTags = ["trending", "popular", "recommended", "bestseller", "new-arrival"]
-      const newTags = suggestedTags.filter((tag) => !formData.tags?.includes(tag)).slice(0, 3)
-      setFormData({
-        ...formData,
-        tags: [...(formData.tags || []), ...newTags],
-      })
-      setIsGeneratingTags(false)
-    }, 1000)
   }
 
   const handleSave = () => {
@@ -160,20 +145,7 @@ export function ProductDialog({ open, onOpenChange, product, onSave, isSaving = 
           </div>
 
           <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label className="text-foreground">Tags</Label>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={handleGenerateAITags}
-                disabled={isGeneratingTags}
-                className="border-primary/30 text-primary hover:bg-primary/10 bg-transparent"
-              >
-                <Sparkles className="h-3 w-3 mr-2" />
-                {isGeneratingTags ? "Generating..." : "Generate AI Tags"}
-              </Button>
-            </div>
+            <Label className="text-foreground">Tags</Label>
 
             <div className="flex gap-2">
               <Input
