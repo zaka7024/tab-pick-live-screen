@@ -27,7 +27,7 @@ export function ProductDialog({ open, onOpenChange, product, onSave, isSaving = 
     description: "",
     category: "",
     price: 0,
-    currency: "USD",
+    currency: "JOD",
     tags: [],
     organizationId: "",
   })
@@ -42,7 +42,7 @@ export function ProductDialog({ open, onOpenChange, product, onSave, isSaving = 
         description: "",
         category: "",
         price: 0,
-        currency: "USD",
+        currency: "JOD",
         tags: [],
         organizationId: "",
       })
@@ -136,13 +136,18 @@ export function ProductDialog({ open, onOpenChange, product, onSave, isSaving = 
               <Label htmlFor="currency" className="text-foreground">
                 {t('currency')}
               </Label>
-              <Input
-                id="currency"
-                value={formData.currency}
-                onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
-                placeholder="USD"
-                className="bg-secondary border-border text-foreground"
-              />
+              <Select
+                value={formData.currency || "JOD"}
+                onValueChange={(value) => setFormData({ ...formData, currency: value })}
+              >
+                <SelectTrigger className="bg-secondary border-border text-foreground">
+                  <SelectValue placeholder="Select currency" />
+                </SelectTrigger>
+                <SelectContent className="bg-secondary border-border text-foreground">
+                  <SelectItem value="JOD">JOD (Jordanian Dinar)</SelectItem>
+                  <SelectItem value="SAR">SAR (Saudi Riyal)</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
