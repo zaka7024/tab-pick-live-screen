@@ -1,3 +1,5 @@
+import { ImageOrientation } from "@/app/types/settings"
+
 export interface PreviewSettings {
   theme: {
     primaryColor: string
@@ -8,6 +10,7 @@ export interface PreviewSettings {
     columns: number
     rows: number
     spacing: number
+    imageOrientation: ImageOrientation
   }
   card: {
     style: string

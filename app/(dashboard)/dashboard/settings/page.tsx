@@ -28,6 +28,7 @@ interface SettingsState {
     columns: number
     rows: number
     spacing: number
+    imageOrientation: ImageOrientation
   }
   card: {
     style: string
@@ -49,6 +50,7 @@ type SettingsAction =
   | { type: 'SET_LAYOUT_COLUMNS'; value: number }
   | { type: 'SET_LAYOUT_ROWS'; value: number }
   | { type: 'SET_LAYOUT_SPACING'; value: number }
+  | { type: 'SET_IMAGE_ORIENTATION'; value: ImageOrientation }
   | { type: 'SET_CARD_STYLE'; value: string }
   | { type: 'SET_CARD_BORDER_RADIUS'; value: number }
   | { type: 'SET_CAROUSEL_ITEM_WIDTH'; value: number }
@@ -67,6 +69,7 @@ const initialState: SettingsState = {
     columns: 2,
     rows: 1,
     spacing: 16,
+    imageOrientation: ImageOrientation.Landscape,
   },
   card: {
     style: "elevated",
@@ -136,6 +139,14 @@ function settingsReducer(state: SettingsState, action: SettingsAction): Settings
         layout: {
           ...state.layout,
           spacing: action.value,
+        },
+      }
+    case 'SET_IMAGE_ORIENTATION':
+      return {
+        ...state,
+        layout: {
+          ...state.layout,
+          imageOrientation: action.value,
         },
       }
     case 'SET_CARD_STYLE':
@@ -208,6 +219,7 @@ export default function DisplayPage() {
             columns: settings.layout.config.columns,
             rows: settings.layout.config.rows,
             spacing: settings.layout.config.spacing,
+            imageOrientation: settings.layout.config.imageOrientation ?? ImageOrientation.Landscape,
           },
           card: {
             style: settings.card.style,
@@ -298,7 +310,7 @@ export default function DisplayPage() {
             itemsPerPage: settings?.layout.config.itemsPerPage || 10,
             autoPlay: settings?.layout.config.autoPlay || false,
             showIndicators: settings?.layout.config.showIndicators || true,
-            imageOrientation: settings?.layout.config.imageOrientation || ImageOrientation.Landscape,
+            imageOrientation: state.layout.imageOrientation ?? ImageOrientation.Landscape,
           },
         },
         card: {
@@ -540,18 +552,66 @@ export default function DisplayPage() {
           </div>
         </Card>
 
-        {/* <Card className="p-6 bg-card border-border">
+        <Card className="p-6 bg-card border-border">
           <div className="flex items-center gap-3 mb-6">
             <div className="p-2 rounded-lg bg-primary/10">
               <Layout className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-foreground">Layout Configuration</h3>
-              <p className="text-sm text-muted-foreground">Choose how products are displayed</p>
+              <h3 className="text-lg font-semibold text-foreground">{t('layoutConfiguration')}</h3>
+              <p className="text-sm text-muted-foreground">{t('layoutConfigurationDescription')}</p>
             </div>
           </div>
 
           <div className="space-y-6">
+            <div className="space-y-3">
+              <Label className="text-foreground font-medium">{t('imageOrientation')}</Label>
+              <p className="text-xs text-muted-foreground">{t('imageOrientationDescription')}</p>
+              <RadioGroup
+                value={state.layout.imageOrientation}
+                onValueChange={(value) =>
+                  dispatch({ type: 'SET_IMAGE_ORIENTATION', value: value as ImageOrientation })
+                }
+                className="grid gap-4 sm:grid-cols-2 sm:auto-rows-fr"
+              >
+                <div className="h-full">
+                  <RadioGroupItem
+                    value={ImageOrientation.Landscape}
+                    id="orientation-landscape"
+                    className="peer sr-only"
+                  />
+                  <Label
+                    htmlFor="orientation-landscape"
+                    className="flex h-full flex-col items-center justify-center gap-3 rounded-lg border-2 border-border bg-secondary p-4 transition hover:bg-secondary/80 peer-data-[state=checked]:border-primary cursor-pointer"
+                  >
+                    <div className="flex w-full items-center justify-center rounded-md border border-dashed border-muted-foreground/40 bg-card p-4">
+                      <div className="h-16 w-28 rounded-md bg-primary/20" />
+                    </div>
+                    <span className="text-sm font-medium text-foreground">{t('landscapeOrientation')}</span>
+                  </Label>
+                </div>
+
+                <div className="h-full">
+                  <RadioGroupItem
+                    value={ImageOrientation.Portrait}
+                    id="orientation-portrait"
+                    className="peer sr-only"
+                  />
+                  <Label
+                    htmlFor="orientation-portrait"
+                    className="flex h-full flex-col items-center justify-center gap-3 rounded-lg border-2 border-border bg-secondary p-4 transition hover:bg-secondary/80 peer-data-[state=checked]:border-primary cursor-pointer"
+                  >
+                    <div className="flex w-full items-center justify-center rounded-md border border-dashed border-muted-foreground/40 bg-card p-4">
+                      <div className="h-24 w-16 rounded-md bg-primary/20" />
+                    </div>
+                    <span className="text-sm font-medium text-foreground">{t('portraitOrientation')}</span>
+                  </Label>
+                </div>
+              </RadioGroup>
+            </div>
+          </div>
+
+          {/* <div className="space-y-6">
             <div className="space-y-3">
               <Label className="text-foreground font-medium">Layout Style</Label>
               <RadioGroup value={state.layout.style} onValueChange={(value) => dispatch({ type: 'SET_LAYOUT_STYLE', value })} className="grid grid-cols-2 gap-4">
@@ -663,8 +723,8 @@ export default function DisplayPage() {
                 </div>
               </div>
             )}
-          </div>
-        </Card> */}
+          </div> */}
+        </Card>
 
         {/* <Card className="p-6 bg-card border-border">
           <div className="flex items-center gap-3 mb-6">
