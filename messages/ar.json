@@ -28,7 +28,15 @@
     "delete": "حذف",
     "deleteConfirm": "هل أنت متأكد أنك تريد حذف هذا المنتج؟",
     "deleteError": "فشل حذف المنتج. يرجى المحاولة مرة أخرى.",
-    "saveError": "فشل حفظ المنتج. يرجى المحاولة مرة أخرى."
+    "saveError": "فشل حفظ المنتج. يرجى المحاولة مرة أخرى.",
+    "publish": "نشر",
+    "unpublish": "إلغاء النشر",
+    "publishError": "فشل نشر المنتج. يرجى المحاولة مرة أخرى.",
+    "unpublishError": "فشل إلغاء نشر المنتج. يرجى المحاولة مرة أخرى.",
+    "statusDraft": "مسودة",
+    "statusPublished": "منشور",
+    "statusArchived": "مؤرشف",
+    "status": "الحالة"
   },
   "ProductDialog": {
     "addTitle": "إضافة منتج جديد",

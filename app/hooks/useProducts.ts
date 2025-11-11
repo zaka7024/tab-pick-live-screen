@@ -90,6 +90,50 @@ export function useProducts() {
     }
   };
 
+  const publishProduct = async (id: string) => {
+    try {
+      const response = await fetch(`/api/products/${id}/publish`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to publish product');
+      }
+
+      await mutate();
+      
+      return await response.json();
+    } catch (error) {
+      console.error('Error publishing product:', error);
+      throw error;
+    }
+  };
+
+  const unpublishProduct = async (id: string) => {
+    try {
+      const response = await fetch(`/api/products/${id}/unpublish`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to unpublish product');
+      }
+
+      await mutate();
+      
+      return await response.json();
+    } catch (error) {
+      console.error('Error unpublishing product:', error);
+      throw error;
+    }
+  };
+
   return {
     products: data,
     isLoading,
@@ -98,5 +142,7 @@ export function useProducts() {
     createProduct,
     updateProduct,
     deleteProduct,
+    publishProduct,
+    unpublishProduct,
   };
 }

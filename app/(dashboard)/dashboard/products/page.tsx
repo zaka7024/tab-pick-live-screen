@@ -5,13 +5,13 @@ import { useRouter } from "next/navigation"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Plus, Search, Filter, MoreVertical, Edit, Trash2, Tag, ImageIcon, Sparkles } from "lucide-react"
+import { Plus, Search, Filter, MoreVertical, Edit, Trash2, Tag, ImageIcon, Sparkles, Check, X } from "lucide-react"
 import { ProductDialog } from "@/components/product-dialog"
 import { Badge } from "@/components/ui/badge"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu"
 import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { useProducts } from "@/app/hooks/useProducts"
-import { Product } from "@/app/types/product"
+import { Product, ProductStatus } from "@/app/types/product"
 import { Spinner } from "@/components/ui/spinner"
 import {useTranslations} from 'next-intl';
 
@@ -26,7 +26,7 @@ export default function ProductsPage() {
   const [previewImage, setPreviewImage] = useState<string | null>(null)
 
   // Fetch products using SWR hook
-  const { products, isLoading, isError, mutate, createProduct, updateProduct, deleteProduct } = useProducts()
+  const { products, isLoading, isError, mutate, createProduct, updateProduct, deleteProduct, publishProduct, unpublishProduct } = useProducts()
 
   const handleAddProduct = () => {
     setSelectedProduct(null)
@@ -46,6 +46,49 @@ export default function ProductsPage() {
     } catch (error) {
       console.error('Failed to delete product:', error)
       alert(t('deleteError'))
+    }
+  }
+
+  const handlePublishProduct = async (id: string) => {
+    try {
+      await publishProduct(id)
+    } catch (error) {
+      console.error('Failed to publish product:', error)
+      alert(t('publishError'))
+    }
+  }
+
+  const handleUnpublishProduct = async (id: string) => {
+    try {
+      await unpublishProduct(id)
+    } catch (error) {
+      console.error('Failed to unpublish product:', error)
+      alert(t('unpublishError'))
+    }
+  }
+
+  const getStatusBadge = (status: ProductStatus) => {
+    switch (status) {
+      case ProductStatus.Published:
+        return (
+          <Badge variant="outline" className="border-green-500 text-green-600 bg-green-50">
+            {t('statusPublished')}
+          </Badge>
+        )
+      case ProductStatus.Draft:
+        return (
+          <Badge variant="outline" className="border-yellow-500 text-yellow-600 bg-yellow-50">
+            {t('statusDraft')}
+          </Badge>
+        )
+      case ProductStatus.Archived:
+        return (
+          <Badge variant="outline" className="border-gray-500 text-gray-600 bg-gray-50">
+            {t('statusArchived')}
+          </Badge>
+        )
+      default:
+        return null
     }
   }
 
@@ -160,7 +203,10 @@ export default function ProductsPage() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
-                      <h3 className="text-lg font-semibold text-foreground">{product.name}</h3>
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-lg font-semibold text-foreground">{product.name}</h3>
+                        {product.status && getStatusBadge(product.status)}
+                      </div>
                       <p className="text-sm text-muted-foreground mt-1">{product.category}</p>
                       {product.description && (
                         <p className="text-sm text-muted-foreground mt-2 line-clamp-2">{product.description}</p>
@@ -178,6 +224,18 @@ export default function ProductsPage() {
                           <Edit className="h-4 w-4 mr-2" />
                           {t('editProduct')}
                         </DropdownMenuItem>
+                        {product.status !== ProductStatus.Published ? (
+                          <DropdownMenuItem onClick={() => handlePublishProduct(product.id)} className="text-foreground">
+                            <Check className="h-4 w-4 mr-2" />
+                            {t('publish')}
+                          </DropdownMenuItem>
+                        ) : (
+                          <DropdownMenuItem onClick={() => handleUnpublishProduct(product.id)} className="text-foreground">
+                            <X className="h-4 w-4 mr-2" />
+                            {t('unpublish')}
+                          </DropdownMenuItem>
+                        )}
+                        <DropdownMenuSeparator />
                         <DropdownMenuItem onClick={() => handleDeleteProduct(product.id)} className="text-destructive">
                           <Trash2 className="h-4 w-4 mr-2" />
                           {t('delete')}

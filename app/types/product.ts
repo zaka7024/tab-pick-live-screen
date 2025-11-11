@@ -1,3 +1,9 @@
+export enum ProductStatus {
+  Draft = 'draft',
+  Published = 'published',
+  Archived = 'archived',
+}
+
 export interface Product {
   id: string;
   name: string;
@@ -8,6 +14,7 @@ export interface Product {
   currency: string;
   organizationId: string;
   imageUrl: string;
+  status: ProductStatus;
 }
 
 export interface ProductRecommendationEvent {
